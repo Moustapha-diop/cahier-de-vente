@@ -1,42 +1,85 @@
-<nav class="bg-white border-bottom-1 border-slate-200 sticky top-0 z-5 shadow-1 no-print">
-  <div class="max-w-7xl mx-auto px-3 py-2 md:py-3 flex flex-column sm:flex-row align-items-center justify-content-between gap-2">
+<header class="app-header shadow-1 sticky top-0 z-5 bg-white border-bottom-1 border-slate-200">
+  <div class="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex align-items-center justify-content-between">
+    
     <!-- Brand / Store Title -->
-    <div class="flex align-items-center gap-2 w-full sm:w-auto justify-content-between sm:justify-content-start">
-      <div class="flex align-items-center gap-2 cursor-pointer" routerLink="/cahier">
-        <div class="w-2rem h-2rem md:w-2.5rem md:h-2.5rem border-round-xl bg-blue-600 flex align-items-center justify-content-center text-white shadow-1 flex-shrink-0">
-          <i class="pi pi-book text-base md:text-lg"></i>
-        </div>
-        <div>
-          <h1 class="text-base md:text-lg font-bold text-slate-900 m-0 line-height-1">Cahier de Vente</h1>
-          <span class="text-xs text-blue-600 font-semibold">Magasin Commercial</span>
-        </div>
+    <div class="flex align-items-center gap-2 sm:gap-3 cursor-pointer" routerLink="/" (click)="closeMobileMenu()">
+      <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-xl bg-blue-600 flex align-items-center justify-content-center text-white shadow-2">
+        <i class="pi pi-book text-lg sm:text-xl"></i>
       </div>
-
-      <!-- Store Status Dot (Mobile view) -->
-      <span class="inline-flex sm:hidden align-items-center gap-1 text-xs px-2 py-1 bg-emerald-50 text-emerald-700 border-round-lg font-bold border-1 border-emerald-200">
-        <span class="w-2 h-2 border-round-circle bg-emerald-500"></span> Actif
-      </span>
+      <div>
+        <div class="flex align-items-center gap-2">
+          <h1 class="text-base sm:text-lg font-bold text-slate-900 m-0 tracking-tight">Cahier de Vente</h1>
+          <span class="px-2 py-0.5 bg-blue-50 text-blue-700 border-round-md font-bold text-xs border-1 border-blue-200">
+            Magasin
+          </span>
+        </div>
+        <p class="text-xs text-slate-500 m-0 hidden sm:block font-medium">Gestion simplifiee des ventes & benefices</p>
+      </div>
     </div>
 
-    <!-- Navigation Tabs (Touch-friendly & Horizontal Scroll on Small Phones) -->
-    <div class="flex items-center gap-1 sm:gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 justify-content-start sm:justify-content-end">
-      <a routerLink="/cahier" routerLinkActive="active-tab" [routerLinkActiveOptions]="{exact: true}"
-         class="nav-tab flex align-items-center gap-1 sm:gap-2 px-3 py-2 border-round-lg font-bold text-xs sm:text-sm no-underline text-slate-600 whitespace-nowrap">
-        <i class="pi pi-pencil text-sm"></i>
+    <!-- Desktop Navigation Links (Hidden on Mobile) -->
+    <nav class="hidden md:flex align-items-center gap-2">
+      <button routerLink="/cahier" routerLinkActive="active-nav-tab"
+              class="nav-tab-btn flex align-items-center gap-2 px-3 py-2 border-round-xl font-bold text-sm text-slate-700 bg-transparent border-none cursor-pointer">
+        <i class="pi pi-pencil text-base text-blue-600"></i>
         <span>Cahier du Jour</span>
-      </a>
+      </button>
 
-      <a routerLink="/rapports" routerLinkActive="active-tab"
-         class="nav-tab flex align-items-center gap-1 sm:gap-2 px-3 py-2 border-round-lg font-bold text-xs sm:text-sm no-underline text-slate-600 whitespace-nowrap">
-        <i class="pi pi-chart-bar text-sm"></i>
+      <button routerLink="/rapports" routerLinkActive="active-nav-tab"
+              class="nav-tab-btn flex align-items-center gap-2 px-3 py-2 border-round-xl font-bold text-sm text-slate-700 bg-transparent border-none cursor-pointer">
+        <i class="pi pi-chart-bar text-base text-emerald-600"></i>
         <span>Rapports & Factures</span>
-      </a>
+      </button>
 
-      <a routerLink="/historique" routerLinkActive="active-tab"
-         class="nav-tab flex align-items-center gap-1 sm:gap-2 px-3 py-2 border-round-lg font-bold text-xs sm:text-sm no-underline text-slate-600 whitespace-nowrap">
-        <i class="pi pi-history text-sm"></i>
+      <button routerLink="/historique" routerLinkActive="active-nav-tab"
+              class="nav-tab-btn flex align-items-center gap-2 px-3 py-2 border-round-xl font-bold text-sm text-slate-700 bg-transparent border-none cursor-pointer">
+        <i class="pi pi-history text-base text-indigo-600"></i>
         <span>Historique</span>
-      </a>
+      </button>
+    </nav>
+
+    <!-- Mobile Hamburger Toggle Button (Visible only on Mobile) -->
+    <div class="flex md:hidden align-items-center">
+      <button (click)="toggleMobileMenu()" class="hamburger-btn flex align-items-center justify-content-center p-2 border-round-lg border-1 border-slate-300 bg-slate-50 text-slate-800 cursor-pointer outline-none">
+        <i [class]="mobileMenuOpen ? 'pi pi-times text-xl text-red-600' : 'pi pi-bars text-xl text-slate-800'"></i>
+      </button>
     </div>
+
   </div>
-</nav>
+
+  <!-- Mobile Dropdown Menu Drawer -->
+  <div *ngIf="mobileMenuOpen" class="md:hidden border-top-1 border-slate-200 bg-white p-3 shadow-3 flex flex-column gap-2 animate-fade-in">
+    <button routerLink="/cahier" routerLinkActive="mobile-active-tab" (click)="closeMobileMenu()"
+            class="mobile-nav-btn flex align-items-center gap-3 p-3 border-round-xl font-bold text-base text-slate-800 bg-slate-50 border-none cursor-pointer text-left w-full">
+      <div class="w-2.5rem h-2.5rem border-round-lg bg-blue-100 flex align-items-center justify-content-center text-blue-600">
+        <i class="pi pi-pencil text-lg"></i>
+      </div>
+      <div>
+        <div class="font-bold text-slate-900">Cahier du Jour</div>
+        <div class="text-xs text-slate-500 font-normal">Saisie des ventes & cloture</div>
+      </div>
+    </button>
+
+    <button routerLink="/rapports" routerLinkActive="mobile-active-tab" (click)="closeMobileMenu()"
+            class="mobile-nav-btn flex align-items-center gap-3 p-3 border-round-xl font-bold text-base text-slate-800 bg-slate-50 border-none cursor-pointer text-left w-full">
+      <div class="w-2.5rem h-2.5rem border-round-lg bg-emerald-100 flex align-items-center justify-content-center text-emerald-600">
+        <i class="pi pi-chart-bar text-lg"></i>
+      </div>
+      <div>
+        <div class="font-bold text-slate-900">Rapports & Factures</div>
+        <div class="text-xs text-slate-500 font-normal">Bilan par jour, semaine, mois</div>
+      </div>
+    </button>
+
+    <button routerLink="/historique" routerLinkActive="mobile-active-tab" (click)="closeMobileMenu()"
+            class="mobile-nav-btn flex align-items-center gap-3 p-3 border-round-xl font-bold text-base text-slate-800 bg-slate-50 border-none cursor-pointer text-left w-full">
+      <div class="w-2.5rem h-2.5rem border-round-lg bg-indigo-100 flex align-items-center justify-content-center text-indigo-600">
+        <i class="pi pi-history text-lg"></i>
+      </div>
+      <div>
+        <div class="font-bold text-slate-900">Historique des Clotures</div>
+        <div class="text-xs text-slate-500 font-normal">Consulter les journees passees</div>
+      </div>
+    </button>
+  </div>
+</header>
