@@ -78,6 +78,10 @@ public class VenteService {
         ligneVenteRepository.delete(ligne);
     }
 
+    public void reinitialiserToutesLesVentes() {
+        ligneVenteRepository.deleteAll();
+    }
+
     public JourneeSummary getJourneeSummary(LocalDate date) {
         LocalDate targetDate = (date != null) ? date : LocalDate.now();
         List<LigneVente> lignes = ligneVenteRepository.findByDateVenteOrderByIdAsc(targetDate);

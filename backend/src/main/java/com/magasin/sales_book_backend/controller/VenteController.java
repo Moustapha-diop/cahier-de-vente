@@ -12,12 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ventes")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class VenteController {
 
     private final VenteService venteService;
@@ -29,19 +27,27 @@ public class VenteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LigneVente> modifierLigne(@PathVariable Long id, @Valid @RequestBody LigneVenteRequest request) {
+    public ResponseEntity<LigneVente> modifierLigne(
+            @PathVariable Long id,
+            @Valid @RequestBody LigneVenteRequest request) {
         LigneVente updated = venteService.modifierLigne(id, request);
         return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> supprimerLigne(@PathVariable Long id) {
+    public ResponseEntity<Void> supprimerLigne(@PathVariable Long id) {
         venteService.supprimerLigne(id);
-        return ResponseEntity.ok(Map.of("message", "Ligne supprimÃ©e avec succÃ¨s"));
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/reinitialiser")
+    public ResponseEntity<Void> reinitialiserToutesLesVentes() {
+        venteService.reinitialiserToutesLesVentes();
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/jour")
-    public ResponseEntity<JourneeSummary> getJournee(
+    public ResponseEntity<JourneeSummary> getJourneeSummary(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         JourneeSummary summary = venteService.getJourneeSummary(date);
         return ResponseEntity.ok(summary);
@@ -50,7 +56,7 @@ public class VenteController {
     @PostMapping("/cloturer")
     public ResponseEntity<JourneeSummary> cloturerJournee(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam(required = false, defaultValue = "false") boolean forcerReouverture) {
+            @RequestParam(defaultValue = "false") boolean forcerReouverture) {
         JourneeSummary summary = venteService.cloturerJournee(date, forcerReouverture);
         return ResponseEntity.ok(summary);
     }
@@ -66,7 +72,8 @@ public class VenteController {
     }
 
     @GetMapping("/dates")
-    public ResponseEntity<List<LocalDate>> getDatesHistorique() {
-        return ResponseEntity.ok(venteService.getHistoriqueDates());
+    public ResponseEntity<List<LocalDate>> getHistoriqueDates() {
+        List<LocalDate> dates = venteService.getHistoriqueDates();
+        return ResponseEntity.ok(dates);
     }
 }
