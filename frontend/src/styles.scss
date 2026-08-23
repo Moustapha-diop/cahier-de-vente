@@ -1,0 +1,150 @@
+@import "primeicons/primeicons.css";
+@import "primeflex/primeflex.css";
+
+/* Base Global Styles */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mono-font {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+/* Light Store Card */
+.store-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Stat Cards */
+.stat-card-light {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card-light:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+}
+
+/* Notebook Total Badge */
+.notebook-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ecfdf5;
+  color: #047857;
+  border: 2px solid #10b981;
+  padding: 0.5rem 1.25rem;
+  border-round: 9999px;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.15);
+}
+
+/* Custom High-Contrast Sales Table */
+.custom-sales-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 600px; /* Allows smooth horizontal swipe on small screens */
+}
+
+.custom-sales-table th {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.85rem 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.custom-sales-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.925rem;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.custom-sales-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.table-total-row td {
+  background-color: #f8fafc;
+  border-top: 2px solid #cbd5e1;
+  border-bottom: none;
+  padding: 1.1rem 1rem;
+}
+
+/* Mobile Responsive Table Wrapper */
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Print Only Utilities */
+.print-only {
+  display: none;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .store-card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Mobile Specific Optimizations (< 768px) */
+@media screen and (max-width: 767px) {
+  .store-card {
+    border-radius: 12px;
+  }
+  
+  .stat-card-light {
+    padding: 1rem;
+  }
+  
+  /* Touch target sizes */
+  button, .p-button {
+    min-height: 42px;
+  }
+
+  /* Compact Navbar on Mobile */
+  .mobile-nav-link {
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.6rem !important;
+  }
+}

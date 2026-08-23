@@ -1,0 +1,92 @@
+<div class="max-w-7xl mx-auto p-3 md:p-4">
+  <div class="store-card overflow-hidden">
+    <div class="flex flex-column sm:flex-row align-items-start sm:align-items-center justify-content-between p-3 md:p-4 bg-slate-50 border-bottom-1 border-slate-200 gap-2">
+      <div>
+        <h2 class="text-xl font-bold text-slate-800 m-0">Historique des Journees et Clotures</h2>
+        <p class="text-xs text-slate-500 m-0 mt-1">Consultez et reouvrez n'importe quelle journee enregistree</p>
+      </div>
+
+      <!-- Page Size Selector -->
+      <div class="flex align-items-center gap-2 text-xs text-slate-600 font-medium">
+        <span>Journees par page :</span>
+        <select [(ngModel)]="pageSize" (change)="onPageSizeChange(pageSize)"
+                class="bg-white border-1 border-slate-300 rounded-md px-2 py-1 text-xs font-bold text-slate-800 outline-none cursor-pointer">
+          <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="custom-sales-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;" class="text-center">#</th>
+            <th>Date</th>
+            <th class="text-center">Articles Vendus</th>
+            <th class="text-right">Total Ventes</th>
+            <th class="text-right">Benefice Realise</th>
+            <th class="text-center">Statut</th>
+            <th style="width: 140px;" class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let j of paginatedHistorique; let i = index">
+            <td class="text-center text-slate-400 font-mono font-bold">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td class="font-bold text-slate-900 font-mono text-base">{{ j.date }}</td>
+            <td class="text-center">
+              <span class="px-2 py-1 bg-slate-100 text-slate-700 border-round-md font-bold font-mono text-sm">
+                {{ j.nombreArticles }} article(s)
+              </span>
+            </td>
+            <td class="text-right font-mono font-bold text-blue-700 text-base">
+              {{ j.totalVentes | number:'1.0-0' }} FCFA
+            </td>
+            <td class="text-right font-mono font-bold text-emerald-600 text-base">
+              + {{ j.totalBenefice | number:'1.0-0' }} FCFA
+            </td>
+            <td class="text-center">
+              <p-tag *ngIf="j.cloturee" severity="danger" value="Cloturee" icon="pi pi-lock"></p-tag>
+              <p-tag *ngIf="!j.cloturee" severity="success" value="Ouverte" icon="pi pi-lock-open"></p-tag>
+            </td>
+            <td class="text-center">
+              <p-button label="Consulter" icon="pi pi-arrow-right" [outlined]="true" size="small"
+                        severity="primary" (onClick)="ouvrirJournee(j.date)"></p-button>
+            </td>
+          </tr>
+
+          <tr *ngIf="!historique || historique.length === 0">
+            <td colspan="7" class="text-center p-5 text-slate-400">
+              <i class="pi pi-history text-4xl mb-2 block text-slate-300"></i>
+              Aucun historique de vente trouve.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Navigation Controls for History -->
+    <div *ngIf="totalItems > pageSize" class="flex flex-column sm:flex-row align-items-center justify-content-between p-3 bg-slate-50 border-top-1 border-slate-200 gap-2">
+      <div class="text-xs text-slate-600 font-medium">
+        Affichage de <strong>{{ startRecordIndex }}</strong> a <strong>{{ endRecordIndex }}</strong> sur <strong>{{ totalItems }}</strong> journees
+      </div>
+
+      <div class="flex align-items-center gap-1">
+        <p-button icon="pi pi-angle-double-left" [rounded]="true" [text]="true" size="small"
+                  [disabled]="currentPage === 1" (onClick)="goToPage(1)" pTooltip="Premiere page"></p-button>
+        
+        <p-button icon="pi pi-angle-left" [rounded]="true" [text]="true" size="small"
+                  [disabled]="currentPage === 1" (onClick)="prevPage()" pTooltip="Page precedente"></p-button>
+
+        <span class="px-3 py-1 bg-white border-1 border-slate-300 border-round-md font-mono font-bold text-xs text-slate-800">
+          Page {{ currentPage }} / {{ totalPages }}
+        </span>
+
+        <p-button icon="pi pi-angle-right" [rounded]="true" [text]="true" size="small"
+                  [disabled]="currentPage === totalPages" (onClick)="nextPage()" pTooltip="Page suivante"></p-button>
+
+        <p-button icon="pi pi-angle-double-right" [rounded]="true" [text]="true" size="small"
+                  [disabled]="currentPage === totalPages" (onClick)="goToPage(totalPages)" pTooltip="Derniere page"></p-button>
+      </div>
+    </div>
+  </div>
+</div>

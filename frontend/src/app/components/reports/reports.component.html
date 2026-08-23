@@ -1,0 +1,218 @@
+<div class="max-w-7xl mx-auto p-3 md:p-4">
+  <p-toast></p-toast>
+
+  <!-- Filter Header -->
+  <div class="store-card p-3 md:p-4 mb-4 flex flex-column md:flex-row align-items-center justify-content-between gap-3 no-print">
+    <!-- Period selection tabs -->
+    <div class="flex flex-wrap align-items-center gap-2 w-full md:w-auto">
+      <p-button *ngFor="let p of periodeTypes" [label]="p.label" [icon]="p.icon"
+                [severity]="selectedType === p.value ? 'primary' : 'secondary'"
+                [outlined]="selectedType !== p.value"
+                size="small" (onClick)="selectType(p.value)"></p-button>
+    </div>
+
+    <!-- Date inputs -->
+    <div class="flex flex-wrap align-items-center gap-2 w-full md:w-auto justify-content-between md:justify-content-end">
+      <div *ngIf="selectedType !== 'PERSONNALISE'" class="flex align-items-center gap-2 bg-slate-50 px-3 py-2 border-round-xl border-1 border-slate-300">
+        <span class="text-xs text-slate-600 font-bold">Date ref :</span>
+        <input type="date" [(ngModel)]="dateRef" (change)="chargerRapport()"
+               class="bg-transparent text-slate-900 font-bold border-none outline-none text-sm cursor-pointer" />
+      </div>
+
+      <div *ngIf="selectedType === 'PERSONNALISE'" class="flex align-items-center gap-2">
+        <div class="bg-slate-50 px-3 py-2 border-round-xl border-1 border-slate-300">
+          <span class="text-xs text-slate-600 font-bold mr-2">Du :</span>
+          <input type="date" [(ngModel)]="dateDebut" (change)="chargerRapport()"
+                 class="bg-transparent text-slate-900 font-bold border-none outline-none text-sm cursor-pointer" />
+        </div>
+        <div class="bg-slate-50 px-3 py-2 border-round-xl border-1 border-slate-300">
+          <span class="text-xs text-slate-600 font-bold mr-2">Au :</span>
+          <input type="date" [(ngModel)]="dateFin" (change)="chargerRapport()"
+                 class="bg-transparent text-slate-900 font-bold border-none outline-none text-sm cursor-pointer" />
+        </div>
+      </div>
+
+      <p-button label="Imprimer Facture / Rapport" icon="pi pi-print" severity="success" (onClick)="imprimerFacture()"></p-button>
+    </div>
+  </div>
+
+  <!-- Metrics Cards -->
+  <div class="grid mb-4">
+    <!-- Total Ventes -->
+    <div class="col-12 sm:col-4">
+      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-blue-500">
+        <div>
+          <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Chiffre d'Affaires</span>
+          <div class="text-2xl font-bold text-blue-600 mt-1 mono-font">
+            {{ (rapport?.totalVentes || 0) | number:'1.0-0' }} <span class="text-sm font-normal text-slate-500">FCFA</span>
+          </div>
+          <span class="text-xs text-slate-500 mt-1 block font-medium">{{ rapport?.nombreArticlesTotal || 0 }} article(s) au total</span>
+        </div>
+        <div class="w-3rem h-3rem border-round-circle bg-blue-50 flex align-items-center justify-content-center text-blue-600">
+          <i class="pi pi-wallet text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Benefice Net Total -->
+    <div class="col-12 sm:col-4">
+      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-emerald-500">
+        <div>
+          <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider">Benefice Net Total</span>
+          <div class="text-2xl font-bold text-emerald-600 mt-1 mono-font">
+            {{ (rapport?.totalBenefice || 0) | number:'1.0-0' }} <span class="text-sm font-normal text-slate-500">FCFA</span>
+          </div>
+          <span class="text-xs text-emerald-600 mt-1 block font-semibold">Gain sur la periode</span>
+        </div>
+        <div class="w-3rem h-3rem border-round-circle bg-emerald-50 flex align-items-center justify-content-center text-emerald-600">
+          <i class="pi pi-chart-line text-xl"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Titre Periode -->
+    <div class="col-12 sm:col-4">
+      <div class="stat-card-light flex flex-column justify-content-center bg-slate-50">
+        <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Periode concernee</span>
+        <div class="text-base font-bold text-slate-900 mt-1">
+          {{ rapport?.titrePeriode }}
+        </div>
+        <span class="text-xs text-blue-700 mt-1 block font-mono font-semibold">Du {{ rapport?.dateDebut }} au {{ rapport?.dateFin }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graphique d'evolution -->
+  <div class="store-card p-3 md:p-4 mb-4 no-print" *ngIf="chartData">
+    <div class="flex align-items-center justify-content-between mb-3">
+      <div class="flex align-items-center gap-2">
+        <i class="pi pi-chart-bar text-emerald-600 font-bold"></i>
+        <h3 class="text-base font-bold text-slate-800 m-0">Evolution des Ventes et Benefices</h3>
+      </div>
+    </div>
+    <div style="height: 320px;">
+      <p-chart type="bar" [data]="chartData" [options]="chartOptions" height="300px"></p-chart>
+    </div>
+  </div>
+
+  <!-- Tableau Recapitulatif / Facture Detaillee Pagine -->
+  <div class="store-card overflow-hidden">
+    <!-- Print Header visible in print mode -->
+    <div class="print-only p-4 mb-3 border-bottom-2 border-slate-900">
+      <div class="flex justify-content-between align-items-start">
+        <div>
+          <h1 class="text-2xl font-bold m-0">FACTURE / RAPPORT DE VENTES</h1>
+          <h3 class="text-base text-slate-600 m-0 mt-1">MAGASIN COMMERCIAL</h3>
+          <p class="text-sm text-slate-500 m-0 mt-1">Periode : {{ rapport?.titrePeriode }} ({{ rapport?.dateDebut }} au {{ rapport?.dateFin }})</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs m-0">Date : {{ dateRef }}</p>
+          <div class="text-xl font-bold mt-2">Total Net : {{ (rapport?.totalVentes || 0) | number:'1.0-0' }} FCFA</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-column sm:flex-row align-items-start sm:align-items-center justify-content-between p-3 bg-slate-50 border-bottom-1 border-slate-200 gap-2">
+      <div class="flex align-items-center gap-2">
+        <i class="pi pi-file text-blue-600 font-bold"></i>
+        <h3 class="text-base font-bold text-slate-800 m-0">Detail des Ventes ({{ totalItems }} ligne(s))</h3>
+      </div>
+
+      <!-- Page Size Selector -->
+      <div class="flex align-items-center gap-2 no-print text-xs text-slate-600 font-medium">
+        <span>Lignes par page :</span>
+        <select [(ngModel)]="pageSize" (change)="onPageSizeChange(pageSize)"
+                class="bg-white border-1 border-slate-300 rounded-md px-2 py-1 text-xs font-bold text-slate-800 outline-none cursor-pointer">
+          <option *ngFor="let opt of pageSizeOptions" [value]="opt">{{ opt }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="custom-sales-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;" class="text-center">#</th>
+            <th>Date</th>
+            <th style="width: 80px;" class="text-center">Qte</th>
+            <th>Designation / Produit</th>
+            <th class="text-right">Montant Vendu</th>
+            <th class="text-right">Benefice</th>
+            <th style="width: 110px;" class="text-center">Cloture</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Screen display: Paginated rows -->
+          <tr *ngFor="let ligne of paginatedLignes; let i = index">
+            <td class="text-center text-slate-400 font-mono font-bold">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td class="font-mono text-sm text-slate-600 font-semibold">{{ ligne.dateVente }}</td>
+            <td class="text-center">
+              <span class="px-2 py-1 bg-blue-50 text-blue-700 border-round-md font-bold font-mono text-sm border-1 border-blue-200">
+                {{ ligne.quantite || 1 }}x
+              </span>
+            </td>
+            <td>
+              <span class="font-bold text-slate-900">{{ ligne.nomProduit }}</span>
+            </td>
+            <td class="text-right font-mono font-bold text-blue-700">
+              {{ ligne.montantVendu | number:'1.0-0' }} FCFA
+            </td>
+            <td class="text-right font-mono font-bold text-emerald-600">
+              + {{ ligne.benefice | number:'1.0-0' }} FCFA
+            </td>
+            <td class="text-center">
+              <p-tag *ngIf="ligne.cloturee" severity="success" value="Oui"></p-tag>
+              <p-tag *ngIf="!ligne.cloturee" severity="secondary" value="Non"></p-tag>
+            </td>
+          </tr>
+
+          <tr *ngIf="!rapport?.lignes || rapport?.lignes?.length === 0">
+            <td colspan="7" class="text-center p-5 text-slate-400">
+              Aucune vente trouvee pour cette periode selectionnee.
+            </td>
+          </tr>
+        </tbody>
+
+        <tfoot *ngIf="rapport?.lignes && rapport?.lignes?.length">
+          <tr class="table-total-row">
+            <td colspan="4" class="text-right uppercase text-sm font-bold text-slate-700">TOTAL PERIODE :</td>
+            <td class="text-right mono-font text-blue-700 text-lg font-bold">
+              {{ (rapport?.totalVentes || 0) | number:'1.0-0' }} FCFA
+            </td>
+            <td class="text-right mono-font text-emerald-600 text-lg font-bold">
+              <span class="notebook-badge text-base py-1 px-3">
+                = {{ (rapport?.totalBenefice || 0) | number:'1.0-0' }} FCFA
+              </span>
+            </td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Pagination Navigation Controls for Report -->
+    <div *ngIf="totalItems > pageSize" class="flex flex-column sm:flex-row align-items-center justify-content-between p-3 bg-slate-50 border-top-1 border-slate-200 gap-2 no-print">
+      <div class="text-xs text-slate-600 font-medium">
+        Affichage de <strong>{{ startRecordIndex }}</strong> a <strong>{{ endRecordIndex }}</strong> sur <strong>{{ totalItems }}</strong> ventes
+      </div>
+
+      <div class="flex align-items-center gap-1">
+        <p-button icon="pi pi-angle-double-left" [rounded]="true" [text]="true" size="small"
+                  [disabled]="currentPage === 1" (onClick)="goToPage(1)" pTooltip="Premiere page"></p-button>
+        
+        <p-button icon="pi pi-angle-left" [rounded]="true" [text]="true" size="small"
+                  [disabled]="currentPage === 1" (onClick)="prevPage()" pTooltip="Page precedente"></p-button>
+
+        <span class="px-3 py-1 bg-white border-1 border-slate-300 border-round-md font-mono font-bold text-xs text-slate-800">
+          Page {{ currentPage }} / {{ totalPages }}
+        </span>
+
+        <p-button icon="pi pi-angle-right" [rounded]="true" [text]="true" size="small"
+                  [disabled]="currentPage === totalPages" (onClick)="nextPage()" pTooltip="Page suivante"></p-button>
+
+        <p-button icon="pi pi-angle-double-right" [rounded]="true" [text]="true" size="small"
+                  [disabled]="currentPage === totalPages" (onClick)="goToPage(totalPages)" pTooltip="Derniere page"></p-button>
+      </div>
+    </div>
+  </div>
+</div>

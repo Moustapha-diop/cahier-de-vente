@@ -1,0 +1,42 @@
+<nav class="bg-white border-bottom-1 border-slate-200 sticky top-0 z-5 shadow-1 no-print">
+  <div class="max-w-7xl mx-auto px-3 py-2 md:py-3 flex flex-column sm:flex-row align-items-center justify-content-between gap-2">
+    <!-- Brand / Store Title -->
+    <div class="flex align-items-center gap-2 w-full sm:w-auto justify-content-between sm:justify-content-start">
+      <div class="flex align-items-center gap-2 cursor-pointer" routerLink="/cahier">
+        <div class="w-2rem h-2rem md:w-2.5rem md:h-2.5rem border-round-xl bg-blue-600 flex align-items-center justify-content-center text-white shadow-1 flex-shrink-0">
+          <i class="pi pi-book text-base md:text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-base md:text-lg font-bold text-slate-900 m-0 line-height-1">Cahier de Vente</h1>
+          <span class="text-xs text-blue-600 font-semibold">Magasin Commercial</span>
+        </div>
+      </div>
+
+      <!-- Store Status Dot (Mobile view) -->
+      <span class="inline-flex sm:hidden align-items-center gap-1 text-xs px-2 py-1 bg-emerald-50 text-emerald-700 border-round-lg font-bold border-1 border-emerald-200">
+        <span class="w-2 h-2 border-round-circle bg-emerald-500"></span> Actif
+      </span>
+    </div>
+
+    <!-- Navigation Tabs (Touch-friendly & Horizontal Scroll on Small Phones) -->
+    <div class="flex items-center gap-1 sm:gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 justify-content-start sm:justify-content-end">
+      <a routerLink="/cahier" routerLinkActive="active-tab" [routerLinkActiveOptions]="{exact: true}"
+         class="nav-tab flex align-items-center gap-1 sm:gap-2 px-3 py-2 border-round-lg font-bold text-xs sm:text-sm no-underline text-slate-600 whitespace-nowrap">
+        <i class="pi pi-pencil text-sm"></i>
+        <span>Cahier du Jour</span>
+      </a>
+
+      <a routerLink="/rapports" routerLinkActive="active-tab"
+         class="nav-tab flex align-items-center gap-1 sm:gap-2 px-3 py-2 border-round-lg font-bold text-xs sm:text-sm no-underline text-slate-600 whitespace-nowrap">
+        <i class="pi pi-chart-bar text-sm"></i>
+        <span>Rapports & Factures</span>
+      </a>
+
+      <a routerLink="/historique" routerLinkActive="active-tab"
+         class="nav-tab flex align-items-center gap-1 sm:gap-2 px-3 py-2 border-round-lg font-bold text-xs sm:text-sm no-underline text-slate-600 whitespace-nowrap">
+        <i class="pi pi-history text-sm"></i>
+        <span>Historique</span>
+      </a>
+    </div>
+  </div>
+</nav>

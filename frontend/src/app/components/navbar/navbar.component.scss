@@ -1,0 +1,13 @@
+.nav-tab {
+  transition: all 0.2s ease;
+  &:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+  }
+}
+
+.active-tab {
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1px solid #bfdbfe;
+}
