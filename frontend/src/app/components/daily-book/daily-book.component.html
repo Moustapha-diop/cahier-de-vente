@@ -40,17 +40,17 @@
     </div>
   </div>
 
-  <!-- Key Metrics (Cartes Chiffre d'Affaires, Benefice Realise, Total Encircle) -->
+  <!-- Key Metrics (3 Cartes EquilibrÃ©es : Total Ventes, BÃ©nÃ©fice Net, Transactions du Jour) -->
   <div class="grid mb-3 sm:mb-4">
     <!-- Total Ventes (Chiffre d'affaires) -->
-    <div class="col-12 sm:col-6 md:col-4">
+    <div class="col-12 sm:col-4">
       <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-blue-500">
         <div>
           <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Ventes</span>
           <div class="text-xl sm:text-2xl font-bold text-blue-600 mt-1 mono-font">
             {{ (summary?.totalVentes || 0) | number:'1.0-0' }} <span class="text-xs sm:text-sm font-normal text-slate-500">FCFA</span>
           </div>
-          <span class="text-xs text-slate-500 mt-1 block font-medium">{{ summary?.nombreArticles || 0 }} article(s) au total</span>
+          <span class="text-xs text-slate-500 mt-1 block font-medium">Chiffre d'affaires du jour</span>
         </div>
         <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-circle bg-blue-50 flex align-items-center justify-content-center text-blue-600 flex-shrink-0">
           <i class="pi pi-shopping-bag text-lg sm:text-xl"></i>
@@ -59,7 +59,7 @@
     </div>
 
     <!-- Total Benefice -->
-    <div class="col-12 sm:col-6 md:col-4">
+    <div class="col-12 sm:col-4">
       <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-emerald-500">
         <div>
           <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider">Benefice Net</span>
@@ -74,12 +74,18 @@
       </div>
     </div>
 
-    <!-- Total Encircle du Cahier -->
-    <div class="col-12 md:col-4">
-      <div class="stat-card-light flex flex-column justify-content-center align-items-center bg-slate-50 text-center border-dashed border-2 border-emerald-400">
-        <span class="text-xs text-emerald-800 font-bold uppercase tracking-wider mb-1">Total Cahier Journalier</span>
-        <div class="notebook-badge text-base sm:text-lg">
-          <i class="pi pi-bookmark"></i> = {{ (summary?.totalBenefice || 0) | number:'1.0-0' }} FCFA
+    <!-- Nombre de Transactions / Articles Vendus -->
+    <div class="col-12 sm:col-4">
+      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-indigo-500">
+        <div>
+          <span class="text-xs text-indigo-700 font-bold uppercase tracking-wider">Transactions du Jour</span>
+          <div class="text-xl sm:text-2xl font-bold text-indigo-600 mt-1 mono-font">
+            {{ summary?.lignes?.length || 0 }} <span class="text-xs sm:text-sm font-normal text-slate-500">vente(s)</span>
+          </div>
+          <span class="text-xs text-indigo-600 mt-1 block font-medium">{{ summary?.nombreArticles || 0 }} article(s) au total</span>
+        </div>
+        <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-circle bg-indigo-50 flex align-items-center justify-content-center text-indigo-600 flex-shrink-0">
+          <i class="pi pi-receipt text-lg sm:text-xl"></i>
         </div>
       </div>
     </div>
@@ -155,7 +161,7 @@
     </div>
   </div>
 
-  <!-- Tableau des Ventes Paginate (Mobile Scroll Support) -->
+  <!-- Tableau des Ventes Paginate -->
   <div class="store-card overflow-hidden">
     <div class="flex flex-column sm:flex-row align-items-start sm:align-items-center justify-content-between p-3 bg-slate-50 border-bottom-1 border-slate-200 gap-2">
       <div class="flex align-items-center gap-2">
@@ -249,7 +255,7 @@
       </table>
     </div>
 
-    <!-- Pagination Navigation Controls (Mobile Friendly) -->
+    <!-- Pagination Navigation Controls -->
     <div *ngIf="totalItems > pageSize" class="flex flex-column sm:flex-row align-items-center justify-content-between p-2 sm:p-3 bg-slate-50 border-top-1 border-slate-200 gap-2 no-print">
       <div class="text-xs text-slate-600 font-medium">
         <strong>{{ startRecordIndex }}</strong>-<strong>{{ endRecordIndex }}</strong> sur <strong>{{ totalItems }}</strong> ventes
@@ -283,7 +289,7 @@
     </div>
   </div>
 
-  <!-- Modal de Modification (Mobile Responsive: 92vw) -->
+  <!-- Modal de Modification -->
   <p-dialog [(visible)]="editDialogVisible" header="Modifier la ligne" [modal]="true" [style]="{width: '92vw', maxWidth: '450px'}" styleClass="p-fluid">
     <div class="flex flex-column gap-3 py-2">
       <div>
@@ -324,7 +330,7 @@
     </div>
   </p-dialog>
 
-  <!-- Modal Confirmation Suppression (Mobile Responsive: 92vw) -->
+  <!-- Modal Confirmation Suppression -->
   <p-dialog [(visible)]="deleteDialogVisible" header="Confirmer la suppression" [modal]="true" [style]="{width: '92vw', maxWidth: '420px'}">
     <div class="flex align-items-center gap-3 py-3">
       <div class="w-3rem h-3rem border-round-circle bg-red-50 flex align-items-center justify-content-center flex-shrink-0 text-red-600">
@@ -343,7 +349,7 @@
     </div>
   </p-dialog>
 
-  <!-- Modal Confirmation Cloture (Mobile Responsive: 92vw) -->
+  <!-- Modal Confirmation Cloture -->
   <p-dialog [(visible)]="clotureDialogVisible" [header]="isForcingReouverture ? 'Reouverture de la journee' : 'Cloture de la journee'" [modal]="true" [style]="{width: '92vw', maxWidth: '450px'}">
     <div class="flex align-items-center gap-3 py-3">
       <div class="w-3rem h-3rem border-round-circle flex align-items-center justify-content-center flex-shrink-0"

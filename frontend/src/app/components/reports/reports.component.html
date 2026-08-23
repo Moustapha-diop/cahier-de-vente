@@ -41,7 +41,7 @@
     </div>
   </div>
 
-  <!-- Key Metrics / Summary Cards -->
+  <!-- Key Metrics (3 Cartes EquilibrÃ©es : Chiffre d'Affaires, BÃ©nÃ©fice Net, Total Ventes de la PÃ©riode) -->
   <div class="grid mb-3 sm:mb-4">
     <!-- Total Chiffre d'Affaires -->
     <div class="col-12 sm:col-4">
@@ -51,7 +51,7 @@
           <div class="text-xl sm:text-2xl font-bold text-blue-600 mt-1 mono-font">
             {{ (rapport?.totalVentes || 0) | number:'1.0-0' }} <span class="text-xs sm:text-sm font-normal text-slate-500">FCFA</span>
           </div>
-          <span class="text-xs text-slate-500 mt-1 block font-medium">{{ rapport?.nombreArticlesTotal || 0 }} article(s) vendu(s)</span>
+          <span class="text-xs text-slate-500 mt-1 block font-medium">Ventes sur la periode</span>
         </div>
         <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-circle bg-blue-50 flex align-items-center justify-content-center text-blue-600 flex-shrink-0">
           <i class="pi pi-shopping-bag text-lg sm:text-xl"></i>
@@ -67,7 +67,7 @@
           <div class="text-xl sm:text-2xl font-bold text-emerald-600 mt-1 mono-font">
             {{ (rapport?.totalBenefice || 0) | number:'1.0-0' }} <span class="text-xs sm:text-sm font-normal text-slate-500">FCFA</span>
           </div>
-          <span class="text-xs text-emerald-600 mt-1 block font-semibold">Gain sur la periode</span>
+          <span class="text-xs text-emerald-600 mt-1 block font-semibold">Gain net sur la periode</span>
         </div>
         <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-circle bg-emerald-50 flex align-items-center justify-content-center text-emerald-600 flex-shrink-0">
           <i class="pi pi-money-bill text-lg sm:text-xl"></i>
@@ -75,12 +75,18 @@
       </div>
     </div>
 
-    <!-- Periode Concernee / Total Badge -->
+    <!-- Total Transactions de la PÃ©riode -->
     <div class="col-12 sm:col-4">
-      <div class="stat-card-light flex flex-column justify-content-center align-items-center bg-slate-50 text-center border-dashed border-2 border-emerald-400">
-        <span class="text-xs text-emerald-800 font-bold uppercase tracking-wider mb-1">{{ rapport?.titrePeriode || 'Periode' }}</span>
-        <div class="notebook-badge text-base sm:text-lg">
-          <i class="pi pi-bookmark"></i> = {{ (rapport?.totalBenefice || 0) | number:'1.0-0' }} FCFA
+      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-indigo-500">
+        <div>
+          <span class="text-xs text-indigo-700 font-bold uppercase tracking-wider">Ventes de la Periode</span>
+          <div class="text-xl sm:text-2xl font-bold text-indigo-600 mt-1 mono-font">
+            {{ totalItems }} <span class="text-xs sm:text-sm font-normal text-slate-500">vente(s)</span>
+          </div>
+          <span class="text-xs text-indigo-600 mt-1 block font-medium">{{ rapport?.nombreArticlesTotal || 0 }} article(s) au total</span>
+        </div>
+        <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-circle bg-indigo-50 flex align-items-center justify-content-center text-indigo-600 flex-shrink-0">
+          <i class="pi pi-receipt text-lg sm:text-xl"></i>
         </div>
       </div>
     </div>
@@ -101,7 +107,7 @@
 
   <!-- Tableau Recapitulatif & Facture Imprimable -->
   <div class="store-card overflow-hidden">
-    <!-- En-tete officiel visible uniquement a l'impression (Facture / Rapport Commercial) -->
+    <!-- En-tete officiel visible uniquement a l'impression -->
     <div class="print-only p-4 mb-3 border-bottom-2 border-slate-900">
       <div class="flex justify-content-between align-items-start">
         <div>
