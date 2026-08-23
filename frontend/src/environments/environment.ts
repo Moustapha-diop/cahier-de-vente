@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080/api/ventes'
+  apiUrl: 'https://cahier-de-vente-backend.onrender.com/api/ventes'
 };

@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
 })
 export class VenteService {
   private http = inject(HttpClient);
-  private apiUrl = environment.apiUrl || 'http://localhost:8080/api/ventes';
+  private apiUrl = environment.apiUrl || 'https://cahier-de-vente-backend.onrender.com/api/ventes';
 
   getJournee(date?: string): Observable<JourneeSummary> {
     let params = new HttpParams();
