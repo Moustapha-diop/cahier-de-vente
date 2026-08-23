@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { ChartModule } from 'primeng/chart';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
 @Component({
@@ -21,7 +22,8 @@ import { MessageService } from 'primeng/api';
     ButtonModule,
     ChartModule,
     TagModule,
-    ToastModule
+    ToastModule,
+    TooltipModule
   ],
   providers: [MessageService],
   templateUrl: './reports.component.html',
@@ -41,11 +43,11 @@ export class ReportsComponent implements OnInit {
   loading: boolean = false;
 
   periodeTypes = [
-    { label: 'Journee', value: 'JOUR', icon: 'pi pi-calendar' },
+    { label: 'Aujourd\'hui', value: 'JOUR', icon: 'pi pi-calendar' },
     { label: 'Semaine', value: 'SEMAINE', icon: 'pi pi-calendar-plus' },
-    { label: 'Mois', value: 'MOIS', icon: 'pi pi-calendar-times' },
+    { label: 'Mois en cours', value: 'MOIS', icon: 'pi pi-calendar-times' },
     { label: 'Annee', value: 'ANNEE', icon: 'pi pi-calendar' },
-    { label: 'Personnalise', value: 'PERSONNALISE', icon: 'pi pi-filter' }
+    { label: 'Personnalise', value: 'PERSONNALISE', icon: 'pi pi-sliders-h' }
   ];
 
   // Pagination for Report Table
@@ -166,7 +168,10 @@ export class ReportsComponent implements OnInit {
   }
 
   updateChart() {
-    if (!this.rapport?.breakdown) return;
+    if (!this.rapport?.breakdown || this.rapport.breakdown.length === 0) {
+      this.chartData = null;
+      return;
+    }
     const labels = this.rapport.breakdown.map(b => b.label);
     const ventes = this.rapport.breakdown.map(b => b.totalVentes);
     const benefices = this.rapport.breakdown.map(b => b.totalBenefice);
