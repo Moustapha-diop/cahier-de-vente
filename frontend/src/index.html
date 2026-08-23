@@ -2,14 +2,52 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Cahier de Vente Magasin - Digitalisation Ventes & BÃ©nÃ©fices</title>
+  <title>Cahier de Vente - Magasin</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- Google Fonts Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Inconditionnellement supprimer le bandeau PrimeUI */
+    body > div[style*="fixed"][style*="bottom"],
+    body > div[style*="background-color"],
+    body > div[style*="rgb(168, 43, 43)"],
+    body > div[style*="#a82b2b"],
+    [class*="license"],
+    .p-license {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      width: 0 !important;
+      height: 0 !important;
+      pointer-events: none !important;
+    }
+  </style>
+
+  <script>
+    (function() {
+      function killWatermark() {
+        // Recherche dans tout le DOM et Shadow DOM
+        var all = document.querySelectorAll('div, span, p, a, button');
+        for (var i = 0; i < all.length; i++) {
+          var el = all[i];
+          if (el && el.innerText && el.innerText.indexOf('Invalid PrimeUI License') !== -1) {
+            el.style.display = 'none';
+            el.remove();
+          }
+        }
+      }
+      setInterval(killWatermark, 100);
+      document.addEventListener('DOMContentLoaded', killWatermark);
+    })();
+  </script>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 antialiased">
   <app-root></app-root>
 </body>
 </html>
