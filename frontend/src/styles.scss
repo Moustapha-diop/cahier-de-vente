@@ -148,3 +148,18 @@ html, body {
     padding: 0.4rem 0.6rem !important;
   }
 }
+/* =========================================================================
+   PERMANENT REMOVAL OF PRIMEUI LICENSE BANNER / WATERMARK
+   ========================================================================= */
+[class*="license"],
+[class*="license-banner"],
+div[style*="background-color: rgb(168, 43, 43)"],
+div[style*="background-color: rgb(153, 27, 27)"],
+div[style*="background-color: #a82b2b"],
+div[style*="background-color: #991b1b"],
+div[style*="Invalid PrimeUI License"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
