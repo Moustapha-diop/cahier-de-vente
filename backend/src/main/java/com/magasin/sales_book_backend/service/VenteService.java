@@ -1,7 +1,9 @@
 package com.magasin.sales_book_backend.service;
 
 import com.magasin.sales_book_backend.dto.*;
+import com.magasin.sales_book_backend.model.Depense;
 import com.magasin.sales_book_backend.model.LigneVente;
+import com.magasin.sales_book_backend.repository.DepenseRepository;
 import com.magasin.sales_book_backend.repository.LigneVenteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 public class VenteService {
 
     private final LigneVenteRepository ligneVenteRepository;
+    private final DepenseRepository depenseRepository;
 
     public LigneVente ajouterLigne(LigneVenteRequest req) {
         LocalDate date = req.getDateVente() != null ? req.getDateVente() : LocalDate.now();
@@ -80,11 +83,13 @@ public class VenteService {
 
     public void reinitialiserToutesLesVentes() {
         ligneVenteRepository.deleteAll();
+        depenseRepository.deleteAll();
     }
 
     public JourneeSummary getJourneeSummary(LocalDate date) {
         LocalDate targetDate = (date != null) ? date : LocalDate.now();
         List<LigneVente> lignes = ligneVenteRepository.findByDateVenteOrderByIdAsc(targetDate);
+        List<Depense> depenses = depenseRepository.findByDateDepenseOrderByIdAsc(targetDate);
 
         BigDecimal totalVentes = lignes.stream()
                 .map(LigneVente::getMontantVendu)
@@ -93,6 +98,12 @@ public class VenteService {
         BigDecimal totalBenefice = lignes.stream()
                 .map(LigneVente::getBenefice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalDepenses = depenses.stream()
+                .map(Depense::getMontant)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal beneficeNetApresDepenses = totalBenefice.subtract(totalDepenses);
 
         int totalQuantite = lignes.stream()
                 .mapToInt(l -> l.getQuantite() != null ? l.getQuantite() : 1)
@@ -106,8 +117,11 @@ public class VenteService {
                 .nombreArticles(totalQuantite)
                 .totalVentes(totalVentes)
                 .totalBenefice(totalBenefice)
+                .totalDepenses(totalDepenses)
+                .beneficeNetApresDepenses(beneficeNetApresDepenses)
                 .tauxMarge(BigDecimal.ZERO)
                 .lignes(lignes)
+                .depenses(depenses)
                 .build();
     }
 
@@ -115,9 +129,10 @@ public class VenteService {
     public JourneeSummary cloturerJournee(LocalDate date, boolean forcerReouverture) {
         LocalDate targetDate = (date != null) ? date : LocalDate.now();
         List<LigneVente> lignes = ligneVenteRepository.findByDateVenteOrderByIdAsc(targetDate);
+        List<Depense> depenses = depenseRepository.findByDateDepenseOrderByIdAsc(targetDate);
 
-        if (lignes.isEmpty()) {
-            throw new IllegalStateException("Aucune vente enregistrÃ©e pour la journÃ©e du " + targetDate);
+        if (lignes.isEmpty() && depenses.isEmpty()) {
+            throw new IllegalStateException("Aucune opÃ©ration enregistrÃ©e pour la journÃ©e du " + targetDate);
         }
 
         boolean nouveauStatut = !forcerReouverture;
@@ -128,6 +143,12 @@ public class VenteService {
             l.setDateCloture(now);
         }
         ligneVenteRepository.saveAll(lignes);
+
+        for (Depense d : depenses) {
+            d.setCloturee(nouveauStatut);
+            d.setDateCloture(now);
+        }
+        depenseRepository.saveAll(depenses);
 
         return getJourneeSummary(targetDate);
     }
@@ -170,6 +191,7 @@ public class VenteService {
         }
 
         List<LigneVente> lignes = ligneVenteRepository.findByDateVenteBetweenOrderByDateVenteAscIdAsc(start, end);
+        List<Depense> depenses = depenseRepository.findByDateDepenseBetweenOrderByDateDepenseAscIdAsc(start, end);
 
         BigDecimal totalVentes = lignes.stream()
                 .map(LigneVente::getMontantVendu)
@@ -179,24 +201,44 @@ public class VenteService {
                 .map(LigneVente::getBenefice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        BigDecimal totalDepenses = depenses.stream()
+                .map(Depense::getMontant)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal beneficeNetApresDepenses = totalBenefice.subtract(totalDepenses);
+
         int totalQuantite = lignes.stream()
                 .mapToInt(l -> l.getQuantite() != null ? l.getQuantite() : 1)
                 .sum();
 
-        Map<LocalDate, List<LigneVente>> parDate = lignes.stream()
-                .collect(Collectors.groupingBy(LigneVente::getDateVente, TreeMap::new, Collectors.toList()));
+        // Breakdown par date
+        Set<LocalDate> allDates = new TreeSet<>();
+        lignes.forEach(l -> allDates.add(l.getDateVente()));
+        depenses.forEach(d -> allDates.add(d.getDateDepense()));
+
+        Map<LocalDate, List<LigneVente>> ventesParDate = lignes.stream()
+                .collect(Collectors.groupingBy(LigneVente::getDateVente));
+        Map<LocalDate, List<Depense>> depensesParDate = depenses.stream()
+                .collect(Collectors.groupingBy(Depense::getDateDepense));
 
         List<PeriodeStat> breakdown = new ArrayList<>();
-        parDate.forEach((dateKey, listVentes) -> {
-            BigDecimal v = listVentes.stream().map(LigneVente::getMontantVendu).reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal b = listVentes.stream().map(LigneVente::getBenefice).reduce(BigDecimal.ZERO, BigDecimal::add);
-            int qteTotale = listVentes.stream().mapToInt(l -> l.getQuantite() != null ? l.getQuantite() : 1).sum();
+        allDates.forEach(dateKey -> {
+            List<LigneVente> vList = ventesParDate.getOrDefault(dateKey, Collections.emptyList());
+            List<Depense> dList = depensesParDate.getOrDefault(dateKey, Collections.emptyList());
+
+            BigDecimal v = vList.stream().map(LigneVente::getMontantVendu).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal b = vList.stream().map(LigneVente::getBenefice).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal d = dList.stream().map(Depense::getMontant).reduce(BigDecimal.ZERO, BigDecimal::add);
+            int qteTotale = vList.stream().mapToInt(l -> l.getQuantite() != null ? l.getQuantite() : 1).sum();
+
             breakdown.add(PeriodeStat.builder()
                     .label(dateKey.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
                     .dateRef(dateKey)
                     .nombreVentes(qteTotale)
                     .totalVentes(v)
                     .totalBenefice(b)
+                    .totalDepenses(d)
+                    .beneficeNetApresDepenses(b.subtract(d))
                     .build());
         });
 
@@ -208,13 +250,19 @@ public class VenteService {
                 .nombreArticlesTotal(totalQuantite)
                 .totalVentes(totalVentes)
                 .totalBenefice(totalBenefice)
+                .totalDepenses(totalDepenses)
+                .beneficeNetApresDepenses(beneficeNetApresDepenses)
                 .margeMoyennePourcentage(BigDecimal.ZERO)
                 .breakdown(breakdown)
                 .lignes(lignes)
+                .depenses(depenses)
                 .build();
     }
 
     public List<LocalDate> getHistoriqueDates() {
-        return ligneVenteRepository.findDistinctDates();
+        Set<LocalDate> dates = new TreeSet<>(Comparator.reverseOrder());
+        dates.addAll(ligneVenteRepository.findDistinctDates());
+        dates.addAll(depenseRepository.findDistinctDates());
+        return new ArrayList<>(dates);
     }
 }

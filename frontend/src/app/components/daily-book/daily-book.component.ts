@@ -1,16 +1,16 @@
-import { Component, OnInit, inject, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 import { VenteService } from '../../services/vente.service';
-import { JourneeSummary, LigneVente, LigneVenteRequest } from '../../models/vente.model';
+import { DepenseService } from '../../services/depense.service';
+import { JourneeSummary, LigneVente, LigneVenteRequest, Depense, DepenseRequest } from '../../models/vente.model';
 
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { TagModule } from 'primeng/tag';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
+import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
@@ -23,9 +23,9 @@ import { MessageService } from 'primeng/api';
     TableModule,
     ButtonModule,
     InputTextModule,
-    TagModule,
     DialogModule,
     ToastModule,
+    TagModule,
     TooltipModule
   ],
   providers: [MessageService],
@@ -34,20 +34,62 @@ import { MessageService } from 'primeng/api';
 })
 export class DailyBookComponent implements OnInit {
   private venteService = inject(VenteService);
+  private depenseService = inject(DepenseService);
   private messageService = inject(MessageService);
-  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
-
-  @ViewChild('produitInput') produitInputRef!: ElementRef;
 
   currentDate: string = this.formatDate(new Date());
   summary: JourneeSummary | null = null;
   loading: boolean = false;
 
-  // Pagination
+  // Active sub-tab in daily book: 'ventes' | 'depenses'
+  activeTab: 'ventes' | 'depenses' = 'ventes';
+
+  // Fast Sales Entry Fields
+  newQuantite: number = 1;
+  newNomProduit: string = '';
+  newMontantVendu: number | null = null;
+  newBenefice: number | null = null;
+
+  // Fast Expense Entry Fields
+  newDepenseMotif: string = '';
+  newDepenseMontant: number | null = null;
+  newDepenseCategorie: string = 'AUTRE';
+  categoriesDepense: string[] = ['REPAS', 'TRANSPORT', 'FACTURE', 'RETRAIT_PERSO', 'FOURNITURE', 'AUTRE'];
+
+  // Pagination for Sales Table
   currentPage: number = 1;
   pageSize: number = 10;
-  pageSizeOptions: number[] = [5, 10, 20, 50];
+  pageSizeOptions: number[] = [5, 10, 20, 50, 100];
+
+  // Modals for Editing & Deleting Sales
+  editDialogVisible: boolean = false;
+  editingLigneId: number | null = null;
+  editQuantite: number = 1;
+  editNomProduit: string = '';
+  editMontantUnitaire: number = 0;
+  editBeneficeUnitaire: number = 0;
+  editNote: string = '';
+
+  deleteDialogVisible: boolean = false;
+  ligneToDelete: LigneVente | null = null;
+
+  // Modals for Editing & Deleting Expenses
+  editDepenseDialogVisible: boolean = false;
+  editingDepenseId: number | null = null;
+  editDepenseMotif: string = '';
+  editDepenseMontant: number = 0;
+  editDepenseCategorie: string = 'AUTRE';
+
+  deleteDepenseDialogVisible: boolean = false;
+  depenseToDelete: Depense | null = null;
+
+  // Modal Closure
+  clotureDialogVisible: boolean = false;
+  isForcingReouverture: boolean = false;
+
+  @ViewChild('produitInput') produitInputRef!: ElementRef<HTMLInputElement>;
+  @ViewChild('depenseInput') depenseInputRef!: ElementRef<HTMLInputElement>;
 
   get totalItems(): number {
     return this.summary?.lignes?.length || 0;
@@ -59,8 +101,8 @@ export class DailyBookComponent implements OnInit {
 
   get paginatedLignes(): LigneVente[] {
     if (!this.summary?.lignes) return [];
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    return this.summary.lignes.slice(startIndex, startIndex + this.pageSize);
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.summary.lignes.slice(start, start + this.pageSize);
   }
 
   get startRecordIndex(): number {
@@ -72,9 +114,9 @@ export class DailyBookComponent implements OnInit {
     return Math.min(this.currentPage * this.pageSize, this.totalItems);
   }
 
-  goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
+  goToPage(p: number) {
+    if (p >= 1 && p <= this.totalPages) {
+      this.currentPage = p;
       this.cdr.detectChanges();
     }
   }
@@ -93,63 +135,34 @@ export class DailyBookComponent implements OnInit {
     }
   }
 
-  onPageSizeChange(newSize: number) {
-    this.pageSize = Number(newSize);
+  onPageSizeChange(size: number) {
+    this.pageSize = Number(size);
     this.currentPage = 1;
     this.cdr.detectChanges();
   }
 
-  // Formulaire de saisie rapide
-  newQuantite: number = 1;
-  newNomProduit: string = '';
-  newMontantVendu: number | null = null;
-  newBenefice: number | null = null;
-  newNote: string = '';
-
   get previewTotalMontant(): number {
-    const qte = this.newQuantite && this.newQuantite > 0 ? this.newQuantite : 1;
+    const qte = this.newQuantite > 0 ? this.newQuantite : 1;
     return (this.newMontantVendu || 0) * qte;
   }
 
   get previewTotalBenefice(): number {
-    const qte = this.newQuantite && this.newQuantite > 0 ? this.newQuantite : 1;
+    const qte = this.newQuantite > 0 ? this.newQuantite : 1;
     return (this.newBenefice || 0) * qte;
   }
 
-  // Modal d'edition
-  editDialogVisible: boolean = false;
-  selectedLigne: LigneVente | null = null;
-  editQuantite: number = 1;
-  editNomProduit: string = '';
-  editMontantUnitaire: number = 0;
-  editBeneficeUnitaire: number = 0;
-  editNote: string = '';
-
   get editPreviewTotalMontant(): number {
-    const qte = this.editQuantite && this.editQuantite > 0 ? this.editQuantite : 1;
+    const qte = this.editQuantite > 0 ? this.editQuantite : 1;
     return (this.editMontantUnitaire || 0) * qte;
   }
 
   get editPreviewTotalBenefice(): number {
-    const qte = this.editQuantite && this.editQuantite > 0 ? this.editQuantite : 1;
+    const qte = this.editQuantite > 0 ? this.editQuantite : 1;
     return (this.editBeneficeUnitaire || 0) * qte;
   }
 
-  // Modal de confirmation suppression
-  deleteDialogVisible: boolean = false;
-  ligneToDelete: LigneVente | null = null;
-
-  // Modal de confirmation cloture
-  clotureDialogVisible: boolean = false;
-  isForcingReouverture: boolean = false;
-
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
-      if (params['date']) {
-        this.currentDate = params['date'];
-      }
-      this.chargerJournee();
-    });
+    this.chargerJournee();
   }
 
   formatDate(d: Date): string {
@@ -157,19 +170,6 @@ export class DailyBookComponent implements OnInit {
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-  }
-
-  onDateChange() {
-    if (this.currentDate) {
-      this.currentPage = 1;
-      this.chargerJournee();
-    }
-  }
-
-  setToday() {
-    this.currentDate = this.formatDate(new Date());
-    this.currentPage = 1;
-    this.chargerJournee();
   }
 
   changerJour(delta: number) {
@@ -180,130 +180,134 @@ export class DailyBookComponent implements OnInit {
     this.chargerJournee();
   }
 
+  setToday() {
+    this.currentDate = this.formatDate(new Date());
+    this.currentPage = 1;
+    this.chargerJournee();
+  }
+
+  onDateChange() {
+    this.currentPage = 1;
+    this.chargerJournee();
+  }
+
   chargerJournee() {
     this.loading = true;
     this.cdr.detectChanges();
     this.venteService.getJournee(this.currentDate).subscribe({
       next: (data) => {
         this.summary = data;
-        if (this.currentPage > this.totalPages) {
-          this.currentPage = Math.max(1, this.totalPages);
-        }
         this.loading = false;
         this.cdr.detectChanges();
-        setTimeout(() => this.focusProduitInput(), 100);
       },
       error: () => {
         this.loading = false;
         this.cdr.detectChanges();
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de contacter le serveur backend.'
-        });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de contacter le serveur backend.' });
       }
     });
   }
 
-  focusProduitInput() {
-    if (this.produitInputRef && !this.summary?.cloturee) {
-      this.produitInputRef.nativeElement.focus();
-    }
-  }
-
   ajouterLigne() {
-    if (!this.newNomProduit || this.newNomProduit.trim() === '') {
-      this.messageService.add({ severity: 'warn', summary: 'Attention', detail: 'Saisissez le nom du produit.' });
+    if (!this.newNomProduit.trim()) {
+      this.messageService.add({ severity: 'warn', summary: 'Attention', detail: 'Veuillez saisir le nom du produit.' });
       return;
     }
     if (this.newMontantVendu === null || this.newMontantVendu < 0) {
-      this.messageService.add({ severity: 'warn', summary: 'Attention', detail: 'Saisissez le montant.' });
-      return;
-    }
-    if (this.newBenefice === null) {
-      this.messageService.add({ severity: 'warn', summary: 'Attention', detail: 'Saisissez le benefice.' });
+      this.messageService.add({ severity: 'warn', summary: 'Attention', detail: 'Veuillez saisir un montant vendu valide.' });
       return;
     }
 
-    const qte = (this.newQuantite && this.newQuantite > 0) ? Number(this.newQuantite) : 1;
-    const montantUnitaire = Number(this.newMontantVendu);
-    const beneficeUnitaire = Number(this.newBenefice);
+    const qte = (this.newQuantite && this.newQuantite > 0) ? this.newQuantite : 1;
+    const totalMontant = this.newMontantVendu * qte;
+    const totalBenefice = (this.newBenefice || 0) * qte;
 
-    const totalMontant = montantUnitaire * qte;
-    const totalBenefice = beneficeUnitaire * qte;
-
-    const req: LigneVenteRequest = {
+    const request: LigneVenteRequest = {
       dateVente: this.currentDate,
       quantite: qte,
-      nomProduit: this.newNomProduit.trim(),
+      nomProduit: this.newNomProduit.trim().toUpperCase(),
       montantVendu: totalMontant,
-      benefice: totalBenefice,
-      note: this.newNote ? this.newNote.trim() : undefined
+      benefice: totalBenefice
     };
 
-    this.venteService.ajouterLigne(req).subscribe({
-      next: (created) => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Enregistre',
-          detail: `+ ${created.quantite}x ${created.nomProduit} (Total: ${created.montantVendu} FCFA | Gain: ${created.benefice} FCFA)`,
-          life: 2500
-        });
-        this.newQuantite = 1;
+    this.venteService.ajouterLigne(request).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Vente ajoutÃ©e', detail: `${qte}x ${request.nomProduit} enregistrÃ© avec succÃ¨s.` });
         this.newNomProduit = '';
         this.newMontantVendu = null;
         this.newBenefice = null;
-        this.newNote = '';
+        this.newQuantite = 1;
         this.chargerJournee();
+        setTimeout(() => this.produitInputRef?.nativeElement?.focus(), 100);
       },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: err?.error?.message || 'Erreur lors de l\'enregistrement.'
-        });
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible d\'ajouter cette vente.' });
+      }
+    });
+  }
+
+  ajouterDepense() {
+    if (!this.newDepenseMotif.trim()) {
+      this.messageService.add({ severity: 'warn', summary: 'Attention', detail: 'Veuillez saisir le motif de la dÃ©pense/retrait.' });
+      return;
+    }
+    if (this.newDepenseMontant === null || this.newDepenseMontant <= 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Attention', detail: 'Veuillez saisir un montant positif.' });
+      return;
+    }
+
+    const request: DepenseRequest = {
+      dateDepense: this.currentDate,
+      motif: this.newDepenseMotif.trim(),
+      montant: this.newDepenseMontant,
+      categorie: this.newDepenseCategorie
+    };
+
+    this.depenseService.ajouterDepense(request).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'info', summary: 'DÃ©pense enregistrÃ©e', detail: `${request.motif} (${request.montant} FCFA) dÃ©duit du bÃ©nÃ©fice.` });
+        this.newDepenseMotif = '';
+        this.newDepenseMontant = null;
+        this.chargerJournee();
+        setTimeout(() => this.depenseInputRef?.nativeElement?.focus(), 100);
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible d\'enregistrer la dÃ©pense.' });
       }
     });
   }
 
   ouvrirEdition(ligne: LigneVente) {
-    if (this.summary?.cloturee) return;
-    this.selectedLigne = ligne;
-    const qte = ligne.quantite && ligne.quantite > 0 ? ligne.quantite : 1;
-    this.editQuantite = qte;
+    this.editingLigneId = ligne.id || null;
+    this.editQuantite = ligne.quantite || 1;
     this.editNomProduit = ligne.nomProduit;
-    this.editMontantUnitaire = Math.round(ligne.montantVendu / qte);
-    this.editBeneficeUnitaire = Math.round(ligne.benefice / qte);
+    this.editMontantUnitaire = (ligne.montantVendu || 0) / this.editQuantite;
+    this.editBeneficeUnitaire = (ligne.benefice || 0) / this.editQuantite;
     this.editNote = ligne.note || '';
     this.editDialogVisible = true;
-    this.cdr.detectChanges();
   }
 
   enregistrerEdition() {
-    if (!this.selectedLigne?.id) return;
-    const qte = this.editQuantite > 0 ? Number(this.editQuantite) : 1;
-    const montantUnitaire = Number(this.editMontantUnitaire);
-    const beneficeUnitaire = Number(this.editBeneficeUnitaire);
+    if (!this.editingLigneId || !this.editNomProduit.trim()) return;
 
-    const totalMontant = montantUnitaire * qte;
-    const totalBenefice = beneficeUnitaire * qte;
-
+    const qte = this.editQuantite > 0 ? this.editQuantite : 1;
     const req: LigneVenteRequest = {
+      dateVente: this.currentDate,
       quantite: qte,
-      nomProduit: this.editNomProduit,
-      montantVendu: totalMontant,
-      benefice: totalBenefice,
+      nomProduit: this.editNomProduit.trim().toUpperCase(),
+      montantVendu: this.editMontantUnitaire * qte,
+      benefice: this.editBeneficeUnitaire * qte,
       note: this.editNote
     };
 
-    this.venteService.modifierLigne(this.selectedLigne.id, req).subscribe({
+    this.venteService.modifierLigne(this.editingLigneId, req).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Mis a jour', detail: 'Ligne modifiee avec succes.' });
         this.editDialogVisible = false;
+        this.messageService.add({ severity: 'success', summary: 'ModifiÃ©', detail: 'Ligne mise Ã  jour.' });
         this.chargerJournee();
       },
       error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Echec de la modification.' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors de la modification.' });
       }
     });
   }
@@ -311,15 +315,14 @@ export class DailyBookComponent implements OnInit {
   demanderSuppression(ligne: LigneVente) {
     this.ligneToDelete = ligne;
     this.deleteDialogVisible = true;
-    this.cdr.detectChanges();
   }
 
   confirmerSuppressionDirect() {
     if (!this.ligneToDelete?.id) return;
     this.venteService.supprimerLigne(this.ligneToDelete.id).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'info', summary: 'Supprime', detail: 'Ligne supprimee avec succes.' });
         this.deleteDialogVisible = false;
+        this.messageService.add({ severity: 'success', summary: 'SupprimÃ©', detail: 'Ligne supprimÃ©e.' });
         this.ligneToDelete = null;
         this.chargerJournee();
       },
@@ -329,30 +332,71 @@ export class DailyBookComponent implements OnInit {
     });
   }
 
-  demanderCloture(reouvrir = false) {
-    this.isForcingReouverture = reouvrir;
+  ouvrirEditionDepense(depense: Depense) {
+    this.editingDepenseId = depense.id || null;
+    this.editDepenseMotif = depense.motif;
+    this.editDepenseMontant = depense.montant;
+    this.editDepenseCategorie = depense.categorie || 'AUTRE';
+    this.editDepenseDialogVisible = true;
+  }
+
+  enregistrerEditionDepense() {
+    if (!this.editingDepenseId || !this.editDepenseMotif.trim()) return;
+    const req: DepenseRequest = {
+      dateDepense: this.currentDate,
+      motif: this.editDepenseMotif.trim(),
+      montant: this.editDepenseMontant,
+      categorie: this.editDepenseCategorie
+    };
+
+    this.depenseService.modifierDepense(this.editingDepenseId, req).subscribe({
+      next: () => {
+        this.editDepenseDialogVisible = false;
+        this.messageService.add({ severity: 'success', summary: 'ModifiÃ©', detail: 'DÃ©pense mise Ã  jour.' });
+        this.chargerJournee();
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors de la modification.' });
+      }
+    });
+  }
+
+  demanderSuppressionDepense(depense: Depense) {
+    this.depenseToDelete = depense;
+    this.deleteDepenseDialogVisible = true;
+  }
+
+  confirmerSuppressionDepenseDirect() {
+    if (!this.depenseToDelete?.id) return;
+    this.depenseService.supprimerDepense(this.depenseToDelete.id).subscribe({
+      next: () => {
+        this.deleteDepenseDialogVisible = false;
+        this.messageService.add({ severity: 'success', summary: 'SupprimÃ©', detail: 'DÃ©pense supprimÃ©e.' });
+        this.depenseToDelete = null;
+        this.chargerJournee();
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de supprimer cette dÃ©pense.' });
+      }
+    });
+  }
+
+  demanderCloture(forcerReouverture: boolean = false) {
+    this.isForcingReouverture = forcerReouverture;
     this.clotureDialogVisible = true;
-    this.cdr.detectChanges();
   }
 
   confirmerClotureDirect() {
     this.venteService.cloturerJournee(this.currentDate, this.isForcingReouverture).subscribe({
-      next: (updated) => {
-        this.summary = updated;
+      next: () => {
         this.clotureDialogVisible = false;
-        this.cdr.detectChanges();
-        this.messageService.add({
-          severity: 'success',
-          summary: this.isForcingReouverture ? 'Journee Reouverte' : 'Journee Cloturee !',
-          detail: this.isForcingReouverture ? 'Vous pouvez de nouveau enregistrer des ventes.' : 'Total benefice et ventes verrouilles.'
-        });
+        const msg = this.isForcingReouverture ? 'JournÃ©e rÃ©ouverte !' : 'JournÃ©e clÃ´turÃ©e avec succÃ¨s !';
+        this.messageService.add({ severity: 'success', summary: 'Statut mis Ã  jour', detail: msg });
+        this.chargerJournee();
       },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: err?.error?.message || 'Erreur lors de l\'operation.'
-        });
+      error: () => {
+        this.clotureDialogVisible = false;
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors de la clÃ´ture.' });
       }
     });
   }

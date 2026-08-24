@@ -29,7 +29,7 @@
 
       <div class="flex align-items-center gap-2">
         <p-button *ngIf="!summary?.cloturee" label="Cloturer" icon="pi pi-check-circle"
-                  severity="success" [disabled]="!summary?.lignes?.length" (onClick)="demanderCloture(false)"></p-button>
+                  severity="success" [disabled]="!summary?.lignes?.length && !summary?.depenses?.length" (onClick)="demanderCloture(false)"></p-button>
         
         <p-button *ngIf="summary?.cloturee" label="Reouvrir" icon="pi pi-unlock"
                   severity="warn" [outlined]="true" (onClick)="demanderCloture(true)"></p-button>
@@ -40,139 +40,174 @@
     </div>
   </div>
 
-  <!-- Key Metrics (3 Cartes EquilibrÃ©es : Total Ventes, BÃ©nÃ©fice Net, Transactions du Jour) -->
+  <!-- 4 Key Metrics (Total Ventes, BÃ©nÃ©fice Brut, Total DÃ©penses, BÃ©nÃ©fice RÃ©el Restant) -->
   <div class="grid mb-3 sm:mb-4">
-    <!-- Total Ventes (Chiffre d'affaires) -->
-    <div class="col-12 sm:col-4">
-      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-blue-500">
+    <!-- 1. Total Ventes -->
+    <div class="col-12 sm:col-6 lg:col-3">
+      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-blue-500 h-full">
         <div>
           <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Ventes</span>
-          <div class="text-xl sm:text-2xl font-bold text-blue-600 mt-1 mono-font">
-            {{ (summary?.totalVentes || 0) | number:'1.0-0' }} <span class="text-xs sm:text-sm font-normal text-slate-500">FCFA</span>
+          <div class="text-lg sm:text-xl font-bold text-blue-600 mt-1 mono-font">
+            {{ (summary?.totalVentes || 0) | number:'1.0-0' }} <span class="text-xs font-normal text-slate-500">FCFA</span>
           </div>
-          <span class="text-xs text-slate-500 mt-1 block font-medium">Chiffre d'affaires du jour</span>
+          <span class="text-xs text-slate-500 mt-1 block font-medium">{{ summary?.nombreArticles || 0 }} article(s) vendu(s)</span>
         </div>
-        <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-circle bg-blue-50 flex align-items-center justify-content-center text-blue-600 flex-shrink-0">
-          <i class="pi pi-shopping-bag text-lg sm:text-xl"></i>
+        <div class="w-2.5rem h-2.5rem border-round-circle bg-blue-50 flex align-items-center justify-content-center text-blue-600 flex-shrink-0">
+          <i class="pi pi-shopping-bag text-base sm:text-lg"></i>
         </div>
       </div>
     </div>
 
-    <!-- Total Benefice -->
-    <div class="col-12 sm:col-4">
-      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-emerald-500">
+    <!-- 2. Benefice Brut Ventes -->
+    <div class="col-12 sm:col-6 lg:col-3">
+      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-emerald-500 h-full">
         <div>
-          <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider">Benefice Net</span>
-          <div class="text-xl sm:text-2xl font-bold text-emerald-600 mt-1 mono-font">
-            {{ (summary?.totalBenefice || 0) | number:'1.0-0' }} <span class="text-xs sm:text-sm font-normal text-slate-500">FCFA</span>
+          <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider">Benefice Brut Ventes</span>
+          <div class="text-lg sm:text-xl font-bold text-emerald-600 mt-1 mono-font">
+            + {{ (summary?.totalBenefice || 0) | number:'1.0-0' }} <span class="text-xs font-normal text-slate-500">FCFA</span>
           </div>
-          <span class="text-xs text-emerald-600 mt-1 block font-semibold">Gain net du jour</span>
+          <span class="text-xs text-emerald-600 mt-1 block font-medium">Gain brut des ventes</span>
         </div>
-        <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-circle bg-emerald-50 flex align-items-center justify-content-center text-emerald-600 flex-shrink-0">
-          <i class="pi pi-money-bill text-lg sm:text-xl"></i>
+        <div class="w-2.5rem h-2.5rem border-round-circle bg-emerald-50 flex align-items-center justify-content-center text-emerald-600 flex-shrink-0">
+          <i class="pi pi-money-bill text-base sm:text-lg"></i>
         </div>
       </div>
     </div>
 
-    <!-- Nombre de Transactions / Articles Vendus -->
-    <div class="col-12 sm:col-4">
-      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-indigo-500">
+    <!-- 3. Total Depenses / Retraits -->
+    <div class="col-12 sm:col-6 lg:col-3">
+      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-rose-500 h-full">
         <div>
-          <span class="text-xs text-indigo-700 font-bold uppercase tracking-wider">Transactions du Jour</span>
-          <div class="text-xl sm:text-2xl font-bold text-indigo-600 mt-1 mono-font">
-            {{ summary?.lignes?.length || 0 }} <span class="text-xs sm:text-sm font-normal text-slate-500">vente(s)</span>
+          <span class="text-xs text-rose-700 font-bold uppercase tracking-wider">Depenses & Retraits</span>
+          <div class="text-lg sm:text-xl font-bold text-rose-600 mt-1 mono-font">
+            - {{ (summary?.totalDepenses || 0) | number:'1.0-0' }} <span class="text-xs font-normal text-slate-500">FCFA</span>
           </div>
-          <span class="text-xs text-indigo-600 mt-1 block font-medium">{{ summary?.nombreArticles || 0 }} article(s) au total</span>
+          <span class="text-xs text-rose-500 mt-1 block font-medium">{{ summary?.depenses?.length || 0 }} sortie(s) d'argent</span>
         </div>
-        <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-circle bg-indigo-50 flex align-items-center justify-content-center text-indigo-600 flex-shrink-0">
-          <i class="pi pi-receipt text-lg sm:text-xl"></i>
+        <div class="w-2.5rem h-2.5rem border-round-circle bg-rose-50 flex align-items-center justify-content-center text-rose-600 flex-shrink-0">
+          <i class="pi pi-arrow-down-right text-base sm:text-lg"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. BENEFICE REEL RESTANT (NET NET) -->
+    <div class="col-12 sm:col-6 lg:col-3">
+      <div class="stat-card-light flex flex-column justify-content-center align-items-center bg-slate-50 text-center border-dashed border-2 border-emerald-500 h-full">
+        <span class="text-xs text-emerald-800 font-bold uppercase tracking-wider mb-1">Benefice Reel Restant</span>
+        <div class="notebook-badge text-sm sm:text-base py-1 px-3">
+          <i class="pi pi-wallet"></i> = {{ (summary?.beneficeNetApresDepenses || 0) | number:'1.0-0' }} FCFA
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Saisie Ultra-Rapide (Responsive Form) -->
+  <!-- Saisie Rapide (Tabs : Vente vs DÃ©pense) -->
   <div class="store-card p-3 md:p-4 mb-3 sm:mb-4 no-print" *ngIf="!summary?.cloturee">
-    <div class="flex align-items-center justify-content-between mb-3">
-      <div class="flex align-items-center gap-2">
-        <i class="pi pi-plus-circle text-blue-600 font-bold text-base sm:text-lg"></i>
-        <span class="font-bold text-slate-800 text-sm sm:text-base">Enregistrer une vente :</span>
+    <!-- Tab Selector -->
+    <div class="flex align-items-center gap-2 mb-3 border-bottom-1 border-slate-200 pb-2">
+      <button (click)="activeTab = 'ventes'"
+              [class]="activeTab === 'ventes' ? 'bg-blue-600 text-white shadow-1' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+              class="flex align-items-center gap-2 px-3 py-2 border-round-lg font-bold text-xs sm:text-sm border-none cursor-pointer transition-all">
+        <i class="pi pi-plus-circle"></i>
+        <span>Enregistrer une Vente</span>
+      </button>
+
+      <button (click)="activeTab = 'depenses'"
+              [class]="activeTab === 'depenses' ? 'bg-rose-600 text-white shadow-1' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+              class="flex align-items-center gap-2 px-3 py-2 border-round-lg font-bold text-xs sm:text-sm border-none cursor-pointer transition-all">
+        <i class="pi pi-minus-circle"></i>
+        <span>Sortie d'argent / Depense</span>
+      </button>
+    </div>
+
+    <!-- Formulaire VENTE -->
+    <div *ngIf="activeTab === 'ventes'">
+      <div class="grid formgrid p-fluid">
+        <div class="col-4 sm:col-3 md:col-2">
+          <label class="block text-xs font-bold text-slate-700 mb-1">Qte *</label>
+          <input type="number" pInputText [(ngModel)]="newQuantite" (keydown.enter)="ajouterLigne()"
+                 min="1" placeholder="1" class="w-full font-mono font-bold text-center p-inputtext-sm" />
+        </div>
+
+        <div class="col-8 sm:col-9 md:col-4">
+          <label class="block text-xs font-bold text-slate-700 mb-1">Produit *</label>
+          <input #produitInput type="text" pInputText [(ngModel)]="newNomProduit" (keydown.enter)="ajouterLigne()"
+                 placeholder="Ex: BASA, MACLA, ROB..." class="w-full font-semibold p-inputtext-sm" />
+        </div>
+
+        <div class="col-6 sm:col-6 md:col-2">
+          <label class="block text-xs font-bold text-slate-700 mb-1">Montant (FCFA) *</label>
+          <input type="number" pInputText [(ngModel)]="newMontantVendu" (keydown.enter)="ajouterLigne()"
+                 placeholder="Ex: 3000" min="0" class="w-full font-mono font-bold text-blue-700 p-inputtext-sm" />
+        </div>
+
+        <div class="col-6 sm:col-6 md:col-2">
+          <label class="block text-xs font-bold text-emerald-700 mb-1">Benefice (FCFA) *</label>
+          <input type="number" pInputText [(ngModel)]="newBenefice" (keydown.enter)="ajouterLigne()"
+                 placeholder="Ex: 200" class="w-full font-mono font-bold text-emerald-600 p-inputtext-sm" />
+        </div>
+
+        <div class="col-12 md:col-2 flex align-items-end mt-2 md:mt-0">
+          <p-button label="Ajouter Vente" icon="pi pi-plus" severity="primary" styleClass="w-full font-bold h-3rem shadow-1"
+                    (onClick)="ajouterLigne()"></p-button>
+        </div>
       </div>
-      <div class="text-xs text-slate-500 italic hidden sm:block">
-        (Validation directe avec la touche <strong>Entree</strong>)
+
+      <!-- Live Preview -->
+      <div *ngIf="newQuantite > 1 && newMontantVendu" class="mt-2 p-2 bg-blue-50 border-round-lg border-1 border-blue-200 flex flex-wrap align-items-center gap-2 text-xs sm:text-sm">
+        <i class="pi pi-calculator text-blue-600 font-bold"></i>
+        <span class="text-slate-700 font-medium">
+          Vente : <strong>{{ newQuantite }} &times; {{ newMontantVendu | number:'1.0-0' }} FCFA</strong> = 
+          <span class="font-bold text-blue-700 font-mono">{{ previewTotalMontant | number:'1.0-0' }} FCFA</span>
+        </span>
+        <span *ngIf="newBenefice" class="text-emerald-700 font-medium">
+          | Gain : <strong>{{ newQuantite }} &times; {{ newBenefice | number:'1.0-0' }} FCFA</strong> = 
+          <span class="font-bold text-emerald-600 font-mono">{{ previewTotalBenefice | number:'1.0-0' }} FCFA</span>
+        </span>
       </div>
     </div>
 
-    <div class="grid formgrid p-fluid">
-      <!-- Quantite -->
-      <div class="col-4 sm:col-3 md:col-2">
-        <label class="block text-xs font-bold text-slate-700 mb-1">Qte *</label>
-        <input type="number" pInputText [(ngModel)]="newQuantite" (keydown.enter)="ajouterLigne()"
-               min="1" placeholder="1" class="w-full font-mono font-bold text-center p-inputtext-sm" />
-      </div>
+    <!-- Formulaire DEPENSE / RETRAIT -->
+    <div *ngIf="activeTab === 'depenses'">
+      <div class="grid formgrid p-fluid">
+        <div class="col-12 sm:col-6 md:col-5">
+          <label class="block text-xs font-bold text-rose-700 mb-1">Motif du retrait / depense *</label>
+          <input #depenseInput type="text" pInputText [(ngModel)]="newDepenseMotif" (keydown.enter)="ajouterDepense()"
+                 placeholder="Ex: Repas midi, Transport, Facture Senelec, Retrait perso..." class="w-full font-semibold p-inputtext-sm" />
+        </div>
 
-      <!-- Designation / Nom Produit -->
-      <div class="col-8 sm:col-9 md:col-4">
-        <label class="block text-xs font-bold text-slate-700 mb-1">Produit *</label>
-        <input #produitInput type="text" pInputText [(ngModel)]="newNomProduit" (keydown.enter)="ajouterLigne()"
-               placeholder="Ex: BASA, MACLA, ROB..." class="w-full font-semibold p-inputtext-sm" />
-      </div>
+        <div class="col-6 sm:col-3 md:col-3">
+          <label class="block text-xs font-bold text-rose-700 mb-1">Montant retire (FCFA) *</label>
+          <input type="number" pInputText [(ngModel)]="newDepenseMontant" (keydown.enter)="ajouterDepense()"
+                 placeholder="Ex: 1500" min="0" class="w-full font-mono font-bold text-rose-700 p-inputtext-sm" />
+        </div>
 
-      <!-- Montant Vendu -->
-      <div class="col-6 sm:col-6 md:col-2">
-        <label class="block text-xs font-bold text-slate-700 mb-1">Montant (FCFA) *</label>
-        <input type="number" pInputText [(ngModel)]="newMontantVendu" (keydown.enter)="ajouterLigne()"
-               placeholder="Ex: 3000" min="0" class="w-full font-mono font-bold text-blue-700 p-inputtext-sm" />
-      </div>
+        <div class="col-6 sm:col-3 md:col-2">
+          <label class="block text-xs font-bold text-slate-700 mb-1">Categorie</label>
+          <select [(ngModel)]="newDepenseCategorie" class="w-full bg-white border-1 border-slate-300 rounded-md p-2 text-xs font-bold text-slate-800 outline-none">
+            <option *ngFor="let c of categoriesDepense" [value]="c">{{ c }}</option>
+          </select>
+        </div>
 
-      <!-- Benefice Realise -->
-      <div class="col-6 sm:col-6 md:col-2">
-        <label class="block text-xs font-bold text-emerald-700 mb-1">Benefice (FCFA) *</label>
-        <input type="number" pInputText [(ngModel)]="newBenefice" (keydown.enter)="ajouterLigne()"
-               placeholder="Ex: 200" class="w-full font-mono font-bold text-emerald-600 p-inputtext-sm" />
+        <div class="col-12 md:col-2 flex align-items-end mt-2 md:mt-0">
+          <p-button label="Enregistrer Depense" icon="pi pi-minus" severity="danger" styleClass="w-full font-bold h-3rem shadow-1"
+                    (onClick)="ajouterDepense()"></p-button>
+        </div>
       </div>
-
-      <!-- Bouton Ajouter -->
-      <div class="col-12 md:col-2 flex align-items-end mt-2 md:mt-0">
-        <p-button label="Ajouter" icon="pi pi-plus" severity="primary" styleClass="w-full font-bold h-3rem shadow-1"
-                  (onClick)="ajouterLigne()"></p-button>
-      </div>
-    </div>
-
-    <!-- Live Multiplication Preview Helper -->
-    <div *ngIf="newQuantite > 1 && newMontantVendu" class="mt-2 p-2 bg-blue-50 border-round-lg border-1 border-blue-200 flex flex-wrap align-items-center gap-2 text-xs sm:text-sm">
-      <i class="pi pi-calculator text-blue-600 font-bold"></i>
-      <span class="text-slate-700 font-medium">
-        Vente : <strong>{{ newQuantite }} &times; {{ newMontantVendu | number:'1.0-0' }} FCFA</strong> = 
-        <span class="font-bold text-blue-700 font-mono">{{ previewTotalMontant | number:'1.0-0' }} FCFA</span>
-      </span>
-      <span *ngIf="newBenefice" class="text-emerald-700 font-medium">
-        | Gain : <strong>{{ newQuantite }} &times; {{ newBenefice | number:'1.0-0' }} FCFA</strong> = 
-        <span class="font-bold text-emerald-600 font-mono">{{ previewTotalBenefice | number:'1.0-0' }} FCFA</span>
-      </span>
     </div>
   </div>
 
-  <!-- Avertissement si journee cloturee -->
-  <div *ngIf="summary?.cloturee" class="p-3 mb-3 sm:mb-4 border-round-xl bg-amber-50 border-1 border-amber-300 text-amber-900 flex align-items-center gap-3 no-print">
-    <i class="pi pi-lock text-xl sm:text-2xl text-amber-600 flex-shrink-0"></i>
-    <div class="text-xs sm:text-sm">
-      <strong>Cette journee a ete cloturee.</strong> Pour modifier des ventes, cliquez sur "Reouvrir" ci-dessus.
-    </div>
-  </div>
-
-  <!-- Tableau des Ventes Paginate -->
-  <div class="store-card overflow-hidden">
+  <!-- TABLEAU 1 : VENTES DU JOUR -->
+  <div class="store-card overflow-hidden mb-3 sm:mb-4">
     <div class="flex flex-column sm:flex-row align-items-start sm:align-items-center justify-content-between p-3 bg-slate-50 border-bottom-1 border-slate-200 gap-2">
       <div class="flex align-items-center gap-2">
         <i class="pi pi-list text-blue-600 font-bold"></i>
-        <h2 class="text-sm sm:text-base md:text-lg font-bold text-slate-800 m-0">Ventes du {{ currentDate }}</h2>
+        <h2 class="text-sm sm:text-base font-bold text-slate-800 m-0">Ventes du {{ currentDate }}</h2>
         <span class="text-xs px-2 py-0.5 bg-slate-200 text-slate-700 border-round-lg font-bold font-mono">
           {{ summary?.lignes?.length || 0 }}
         </span>
       </div>
 
-      <!-- Page Size Selector -->
       <div class="flex align-items-center gap-2 no-print text-xs text-slate-600 font-medium">
         <span>Par page :</span>
         <select [(ngModel)]="pageSize" (change)="onPageSizeChange(pageSize)"
@@ -182,7 +217,6 @@
       </div>
     </div>
 
-    <!-- Responsive Scroll Table -->
     <div class="table-responsive-wrapper">
       <table class="custom-sales-table">
         <thead>
@@ -191,33 +225,28 @@
             <th style="width: 70px;" class="text-center">Qte</th>
             <th>Designation / Produit</th>
             <th class="text-right">Montant Vendu</th>
-            <th class="text-right">Benefice</th>
+            <th class="text-right">Benefice Brut</th>
             <th style="width: 100px;" class="text-center no-print">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let ligne of paginatedLignes; let i = index">
             <td class="text-center text-slate-400 font-mono font-bold">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-            
             <td class="text-center">
               <span class="px-2 py-1 bg-blue-50 text-blue-700 border-round-md font-bold font-mono text-xs sm:text-sm border-1 border-blue-200">
                 {{ ligne.quantite || 1 }}x
               </span>
             </td>
-
             <td>
               <span class="font-bold text-slate-900 text-sm sm:text-base">{{ ligne.nomProduit }}</span>
               <span *ngIf="ligne.note" class="text-xs text-slate-400 block">{{ ligne.note }}</span>
             </td>
-
             <td class="text-right font-mono font-bold text-blue-700 text-sm sm:text-base">
               {{ ligne.montantVendu | number:'1.0-0' }} FCFA
             </td>
-
             <td class="text-right font-mono font-bold text-emerald-600 text-sm sm:text-base">
               + {{ ligne.benefice | number:'1.0-0' }} FCFA
             </td>
-
             <td class="text-center no-print">
               <div class="flex align-items-center justify-content-center gap-1">
                 <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" size="small" severity="info"
@@ -228,26 +257,22 @@
             </td>
           </tr>
 
-          <!-- Message si aucune vente -->
           <tr *ngIf="!summary?.lignes || summary?.lignes?.length === 0">
-            <td colspan="6" class="text-center p-4 sm:p-5 text-slate-400 text-sm">
-              <i class="pi pi-inbox text-3xl sm:text-4xl mb-2 block text-slate-300"></i>
-              Aucune vente enregistree pour cette journee. Saisissez votre premiere vente ci-dessus !
+            <td colspan="6" class="text-center p-4 text-slate-400 text-sm">
+              <i class="pi pi-inbox text-3xl mb-2 block text-slate-300"></i>
+              Aucune vente enregistree pour cette journee.
             </td>
           </tr>
         </tbody>
 
-        <!-- Pied de tableau avec Totaux exacts du cahier -->
         <tfoot *ngIf="summary?.lignes && summary?.lignes?.length">
           <tr class="table-total-row">
-            <td colspan="3" class="text-right uppercase text-xs sm:text-sm font-bold text-slate-700">TOTAL JOURNEE :</td>
-            <td class="text-right mono-font text-blue-700 text-base sm:text-lg font-bold">
+            <td colspan="3" class="text-right uppercase text-xs font-bold text-slate-700">TOTAL VENTES DU JOUR :</td>
+            <td class="text-right mono-font text-blue-700 text-sm sm:text-base font-bold">
               {{ (summary?.totalVentes || 0) | number:'1.0-0' }} FCFA
             </td>
-            <td class="text-right mono-font text-emerald-600 text-base sm:text-lg font-bold">
-              <span class="notebook-badge text-xs sm:text-base py-1 px-2 sm:px-3">
-                = {{ (summary?.totalBenefice || 0) | number:'1.0-0' }} FCFA
-              </span>
+            <td class="text-right mono-font text-emerald-600 text-sm sm:text-base font-bold">
+              + {{ (summary?.totalBenefice || 0) | number:'1.0-0' }} FCFA
             </td>
             <td class="no-print"></td>
           </tr>
@@ -260,92 +285,180 @@
       <div class="text-xs text-slate-600 font-medium">
         <strong>{{ startRecordIndex }}</strong>-<strong>{{ endRecordIndex }}</strong> sur <strong>{{ totalItems }}</strong> ventes
       </div>
-
       <div class="flex align-items-center gap-1">
         <p-button icon="pi pi-angle-double-left" [rounded]="true" [text]="true" size="small"
-                  [disabled]="currentPage === 1" (onClick)="goToPage(1)" pTooltip="Premiere page"></p-button>
-        
+                  [disabled]="currentPage === 1" (onClick)="goToPage(1)"></p-button>
         <p-button icon="pi pi-angle-left" [rounded]="true" [text]="true" size="small"
-                  [disabled]="currentPage === 1" (onClick)="prevPage()" pTooltip="Page precedente"></p-button>
-
+                  [disabled]="currentPage === 1" (onClick)="prevPage()"></p-button>
         <span class="px-2 sm:px-3 py-1 bg-white border-1 border-slate-300 border-round-md font-mono font-bold text-xs text-slate-800">
           {{ currentPage }} / {{ totalPages }}
         </span>
-
         <p-button icon="pi pi-angle-right" [rounded]="true" [text]="true" size="small"
-                  [disabled]="currentPage === totalPages" (onClick)="nextPage()" pTooltip="Page suivante"></p-button>
-
+                  [disabled]="currentPage === totalPages" (onClick)="nextPage()"></p-button>
         <p-button icon="pi pi-angle-double-right" [rounded]="true" [text]="true" size="small"
-                  [disabled]="currentPage === totalPages" (onClick)="goToPage(totalPages)" pTooltip="Derniere page"></p-button>
+                  [disabled]="currentPage === totalPages" (onClick)="goToPage(totalPages)"></p-button>
       </div>
     </div>
   </div>
 
-  <!-- Print Header for Invoices -->
-  <div class="print-only p-4">
-    <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 15px;">
-      <h2>FICHE JOURNALIERE DE VENTES DU MAGASIN</h2>
-      <p>Date : {{ currentDate }} | Cloture : {{ summary?.cloturee ? 'OUI' : 'NON' }}</p>
+  <!-- TABLEAU 2 : DEPENSES DU JOUR (AffichÃ© si dÃ©penses prÃ©sentes) -->
+  <div class="store-card overflow-hidden" *ngIf="summary?.depenses && summary?.depenses?.length">
+    <div class="flex align-items-center justify-content-between p-3 bg-rose-50 border-bottom-1 border-rose-200">
+      <div class="flex align-items-center gap-2">
+        <i class="pi pi-wallet text-rose-600 font-bold"></i>
+        <h3 class="text-sm sm:text-base font-bold text-rose-900 m-0">Sorties d'argent / Depenses du {{ currentDate }}</h3>
+        <span class="text-xs px-2 py-0.5 bg-rose-200 text-rose-800 border-round-lg font-bold font-mono">
+          {{ summary?.depenses?.length }}
+        </span>
+      </div>
+    </div>
+
+    <div class="table-responsive-wrapper">
+      <table class="custom-sales-table">
+        <thead>
+          <tr>
+            <th style="width: 50px;" class="text-center">#</th>
+            <th>Motif de la depense</th>
+            <th style="width: 140px;" class="text-center">Categorie</th>
+            <th class="text-right" style="width: 180px;">Montant Retire</th>
+            <th style="width: 100px;" class="text-center no-print">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let depense of summary?.depenses; let i = index">
+            <td class="text-center text-slate-400 font-mono font-bold">{{ i + 1 }}</td>
+            <td>
+              <span class="font-bold text-slate-900 text-sm sm:text-base">{{ depense.motif }}</span>
+            </td>
+            <td class="text-center">
+              <span class="px-2 py-1 bg-slate-100 text-slate-700 border-round-md text-xs font-bold font-mono">
+                {{ depense.categorie || 'AUTRE' }}
+              </span>
+            </td>
+            <td class="text-right font-mono font-bold text-rose-600 text-sm sm:text-base">
+              - {{ depense.montant | number:'1.0-0' }} FCFA
+            </td>
+            <td class="text-center no-print">
+              <div class="flex align-items-center justify-content-center gap-1">
+                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" size="small" severity="info"
+                          pTooltip="Modifier" tooltipPosition="top" (onClick)="ouvrirEditionDepense(depense)" [disabled]="summary?.cloturee"></p-button>
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" size="small" severity="danger"
+                          pTooltip="Supprimer" tooltipPosition="top" (onClick)="demanderSuppressionDepense(depense)" [disabled]="summary?.cloturee"></p-button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="table-total-row bg-rose-50">
+            <td colspan="3" class="text-right uppercase text-xs font-bold text-rose-900">TOTAL SORTIES DU JOUR :</td>
+            <td class="text-right mono-font text-rose-700 text-sm sm:text-base font-bold">
+              - {{ (summary?.totalDepenses || 0) | number:'1.0-0' }} FCFA
+            </td>
+            <td class="no-print"></td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
   </div>
 
-  <!-- Modal de Modification -->
-  <p-dialog [(visible)]="editDialogVisible" header="Modifier la ligne" [modal]="true" [style]="{width: '92vw', maxWidth: '450px'}" styleClass="p-fluid">
+  <!-- RECAPITULATIF FINAL DU JOUR (ENCERCLÃ‰) -->
+  <div class="store-card p-3 md:p-4 mt-3 sm:mt-4 bg-slate-900 text-white flex flex-column sm:flex-row align-items-center justify-content-between gap-3 shadow-3">
+    <div>
+      <span class="text-xs uppercase tracking-wider text-slate-400 font-bold">Bilan Journalier Net</span>
+      <h3 class="text-base sm:text-lg font-bold m-0 mt-1 text-white">
+        BÃ©nÃ©fice des Ventes (+{{ (summary?.totalBenefice || 0) | number:'1.0-0' }}) &minus; DÃ©penses (-{{ (summary?.totalDepenses || 0) | number:'1.0-0' }})
+      </h3>
+    </div>
+    <div class="text-center sm:text-right">
+      <div class="text-xl sm:text-2xl font-bold font-mono text-emerald-400 px-4 py-2 border-2 border-emerald-400 border-round-2xl bg-slate-800">
+        = {{ (summary?.beneficeNetApresDepenses || 0) | number:'1.0-0' }} FCFA
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edition Vente -->
+  <p-dialog [(visible)]="editDialogVisible" header="Modifier la vente" [modal]="true" [style]="{width: '92vw', maxWidth: '450px'}" styleClass="p-fluid">
     <div class="flex flex-column gap-3 py-2">
       <div>
         <label class="block text-xs font-bold text-slate-700 mb-1">Quantite *</label>
         <input type="number" pInputText [(ngModel)]="editQuantite" min="1" class="w-full font-mono font-bold" />
       </div>
-
       <div>
         <label class="block text-xs font-bold text-slate-700 mb-1">Nom du produit *</label>
         <input type="text" pInputText [(ngModel)]="editNomProduit" class="w-full font-semibold" />
       </div>
-
       <div>
         <label class="block text-xs font-bold text-slate-700 mb-1">Montant Vendu (FCFA) *</label>
         <input type="number" pInputText [(ngModel)]="editMontantUnitaire" min="0" class="w-full font-mono font-bold text-blue-700" />
-        <span *ngIf="editQuantite > 1" class="text-xs text-slate-500 mt-1 block">
-          Total calcule : <strong>{{ editPreviewTotalMontant | number:'1.0-0' }} FCFA</strong>
-        </span>
       </div>
-
       <div>
         <label class="block text-xs font-bold text-emerald-700 mb-1">Benefice (FCFA) *</label>
         <input type="number" pInputText [(ngModel)]="editBeneficeUnitaire" class="w-full font-mono font-bold text-emerald-600" />
-        <span *ngIf="editQuantite > 1" class="text-xs text-emerald-700 mt-1 block">
-          Gain calcule : <strong>{{ editPreviewTotalBenefice | number:'1.0-0' }} FCFA</strong>
-        </span>
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">Note optionnelle</label>
-        <input type="text" pInputText [(ngModel)]="editNote" placeholder="Commentaire..." class="w-full" />
       </div>
     </div>
-
     <div class="flex align-items-center justify-content-end gap-2 pt-3 mt-3 border-top-1 border-slate-200">
       <p-button label="Annuler" icon="pi pi-times" [outlined]="true" severity="secondary" (onClick)="editDialogVisible = false"></p-button>
       <p-button label="Enregistrer" icon="pi pi-check" severity="primary" (onClick)="enregistrerEdition()"></p-button>
     </div>
   </p-dialog>
 
-  <!-- Modal Confirmation Suppression -->
-  <p-dialog [(visible)]="deleteDialogVisible" header="Confirmer la suppression" [modal]="true" [style]="{width: '92vw', maxWidth: '420px'}">
+  <!-- Modal Edition Depense -->
+  <p-dialog [(visible)]="editDepenseDialogVisible" header="Modifier la dÃ©pense / retrait" [modal]="true" [style]="{width: '92vw', maxWidth: '450px'}" styleClass="p-fluid">
+    <div class="flex flex-column gap-3 py-2">
+      <div>
+        <label class="block text-xs font-bold text-rose-700 mb-1">Motif *</label>
+        <input type="text" pInputText [(ngModel)]="editDepenseMotif" class="w-full font-semibold" />
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-rose-700 mb-1">Montant Retire (FCFA) *</label>
+        <input type="number" pInputText [(ngModel)]="editDepenseMontant" min="0" class="w-full font-mono font-bold text-rose-700" />
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Categorie</label>
+        <select [(ngModel)]="editDepenseCategorie" class="w-full bg-white border-1 border-slate-300 rounded-md p-2 text-xs font-bold text-slate-800">
+          <option *ngFor="let c of categoriesDepense" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex align-items-center justify-content-end gap-2 pt-3 mt-3 border-top-1 border-slate-200">
+      <p-button label="Annuler" icon="pi pi-times" [outlined]="true" severity="secondary" (onClick)="editDepenseDialogVisible = false"></p-button>
+      <p-button label="Enregistrer" icon="pi pi-check" severity="primary" (onClick)="enregistrerEditionDepense()"></p-button>
+    </div>
+  </p-dialog>
+
+  <!-- Modal Confirmation Suppression Vente -->
+  <p-dialog [(visible)]="deleteDialogVisible" header="Supprimer la vente" [modal]="true" [style]="{width: '92vw', maxWidth: '420px'}">
     <div class="flex align-items-center gap-3 py-3">
       <div class="w-3rem h-3rem border-round-circle bg-red-50 flex align-items-center justify-content-center flex-shrink-0 text-red-600">
         <i class="pi pi-exclamation-triangle text-2xl"></i>
       </div>
       <div>
         <p class="m-0 text-slate-800 text-sm sm:text-base">
-          Supprimer la vente <strong>{{ ligneToDelete?.quantite || 1 }}x {{ ligneToDelete?.nomProduit }}</strong> ({{ (ligneToDelete?.montantVendu || 0) | number:'1.0-0' }} FCFA) ?
+          Supprimer la vente <strong>{{ ligneToDelete?.quantite || 1 }}x {{ ligneToDelete?.nomProduit }}</strong> ?
         </p>
       </div>
     </div>
-
     <div class="flex align-items-center justify-content-end gap-2 pt-3 mt-2 border-top-1 border-slate-200">
       <p-button label="Annuler" icon="pi pi-times" [outlined]="true" severity="secondary" (onClick)="deleteDialogVisible = false"></p-button>
       <p-button label="Supprimer" icon="pi pi-trash" severity="danger" (onClick)="confirmerSuppressionDirect()"></p-button>
+    </div>
+  </p-dialog>
+
+  <!-- Modal Confirmation Suppression Depense -->
+  <p-dialog [(visible)]="deleteDepenseDialogVisible" header="Supprimer la dÃ©pense" [modal]="true" [style]="{width: '92vw', maxWidth: '420px'}">
+    <div class="flex align-items-center gap-3 py-3">
+      <div class="w-3rem h-3rem border-round-circle bg-red-50 flex align-items-center justify-content-center flex-shrink-0 text-red-600">
+        <i class="pi pi-exclamation-triangle text-2xl"></i>
+      </div>
+      <div>
+        <p class="m-0 text-slate-800 text-sm sm:text-base">
+          Supprimer la dÃ©pense <strong>{{ depenseToDelete?.motif }}</strong> ({{ depenseToDelete?.montant | number:'1.0-0' }} FCFA) ?
+        </p>
+      </div>
+    </div>
+    <div class="flex align-items-center justify-content-end gap-2 pt-3 mt-2 border-top-1 border-slate-200">
+      <p-button label="Annuler" icon="pi pi-times" [outlined]="true" severity="secondary" (onClick)="deleteDepenseDialogVisible = false"></p-button>
+      <p-button label="Supprimer" icon="pi pi-trash" severity="danger" (onClick)="confirmerSuppressionDepenseDirect()"></p-button>
     </div>
   </p-dialog>
 
@@ -360,14 +473,13 @@
         <p class="m-0 text-slate-800 text-sm sm:text-base" *ngIf="!isForcingReouverture">
           Voulez-vous cloturer la journee du <strong>{{ currentDate }}</strong> ?
           <br><br>
-          <span class="text-xs text-slate-500 font-medium">Total Ventes : <strong>{{ (summary?.totalVentes || 0) | number:'1.0-0' }} FCFA</strong> | Gain : <strong>{{ (summary?.totalBenefice || 0) | number:'1.0-0' }} FCFA</strong></span>
+          <span class="text-xs text-slate-500 font-medium">BÃ©nÃ©fice RÃ©el Restant : <strong>{{ (summary?.beneficeNetApresDepenses || 0) | number:'1.0-0' }} FCFA</strong></span>
         </p>
         <p class="m-0 text-slate-800 text-sm sm:text-base" *ngIf="isForcingReouverture">
           Voulez-vous reouvrir la journee du <strong>{{ currentDate }}</strong> ?
         </p>
       </div>
     </div>
-
     <div class="flex align-items-center justify-content-end gap-2 pt-3 mt-2 border-top-1 border-slate-200">
       <p-button label="Annuler" icon="pi pi-times" [outlined]="true" severity="secondary" (onClick)="clotureDialogVisible = false"></p-button>
       <p-button [label]="isForcingReouverture ? 'Reouvrir' : 'Cloturer'"

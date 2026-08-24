@@ -5,7 +5,6 @@
   <div class="store-card p-3 md:p-4 mb-3 sm:mb-4 no-print">
     <div class="flex flex-column lg:flex-row align-items-start lg:align-items-center justify-content-between gap-3">
       
-      <!-- Period selection buttons -->
       <div class="flex flex-wrap align-items-center gap-1 sm:gap-2 w-full lg:w-auto">
         <p-button *ngFor="let p of periodeTypes" [label]="p.label" [icon]="p.icon"
                   [severity]="selectedType === p.value ? 'primary' : 'secondary'"
@@ -13,16 +12,13 @@
                   size="small" (onClick)="selectType(p.value)"></p-button>
       </div>
 
-      <!-- Date filters & Print Button -->
       <div class="flex flex-wrap align-items-center gap-2 w-full lg:w-auto justify-content-between lg:justify-content-end">
-        <!-- Date ref (Single Date) -->
         <div *ngIf="selectedType !== 'PERSONNALISE'" class="flex align-items-center gap-2 bg-slate-50 px-2 sm:px-3 py-2 border-round-xl border-1 border-slate-300">
           <span class="text-xs text-slate-600 font-bold">Date :</span>
           <input type="date" [(ngModel)]="dateRef" (change)="chargerRapport()"
                  class="bg-transparent text-slate-900 font-bold border-none outline-none text-xs sm:text-sm cursor-pointer" />
         </div>
 
-        <!-- Custom Date Range -->
         <div *ngIf="selectedType === 'PERSONNALISE'" class="flex flex-wrap align-items-center gap-2">
           <div class="flex align-items-center gap-1 bg-slate-50 px-2 py-1.5 border-round-xl border-1 border-slate-300">
             <span class="text-xs text-slate-600 font-bold">Du :</span>
@@ -41,89 +37,97 @@
     </div>
   </div>
 
-  <!-- Key Metrics (3 Cartes EquilibrÃ©es : Chiffre d'Affaires, BÃ©nÃ©fice Net, Total Ventes de la PÃ©riode) -->
+  <!-- 4 Key Metrics (Total Ventes, BÃ©nÃ©fice Brut, DÃ©penses PÃ©riode, BÃ©nÃ©fice RÃ©el Restant) -->
   <div class="grid mb-3 sm:mb-4">
-    <!-- Total Chiffre d'Affaires -->
-    <div class="col-12 sm:col-4">
-      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-blue-500">
+    <!-- Total Ventes -->
+    <div class="col-12 sm:col-6 lg:col-3">
+      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-blue-500 h-full">
         <div>
-          <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Chiffre d'Affaires</span>
-          <div class="text-xl sm:text-2xl font-bold text-blue-600 mt-1 mono-font">
-            {{ (rapport?.totalVentes || 0) | number:'1.0-0' }} <span class="text-xs sm:text-sm font-normal text-slate-500">FCFA</span>
+          <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Ventes</span>
+          <div class="text-lg sm:text-xl font-bold text-blue-600 mt-1 mono-font">
+            {{ (rapport?.totalVentes || 0) | number:'1.0-0' }} <span class="text-xs font-normal text-slate-500">FCFA</span>
           </div>
-          <span class="text-xs text-slate-500 mt-1 block font-medium">Ventes sur la periode</span>
+          <span class="text-xs text-slate-500 mt-1 block font-medium">{{ rapport?.nombreArticlesTotal || 0 }} article(s) vendu(s)</span>
         </div>
-        <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-circle bg-blue-50 flex align-items-center justify-content-center text-blue-600 flex-shrink-0">
-          <i class="pi pi-shopping-bag text-lg sm:text-xl"></i>
+        <div class="w-2.5rem h-2.5rem border-round-circle bg-blue-50 flex align-items-center justify-content-center text-blue-600 flex-shrink-0">
+          <i class="pi pi-shopping-bag text-base sm:text-lg"></i>
         </div>
       </div>
     </div>
 
-    <!-- Benefice Net Total -->
-    <div class="col-12 sm:col-4">
-      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-emerald-500">
+    <!-- Benefice Brut -->
+    <div class="col-12 sm:col-6 lg:col-3">
+      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-emerald-500 h-full">
         <div>
-          <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider">Benefice Net Total</span>
-          <div class="text-xl sm:text-2xl font-bold text-emerald-600 mt-1 mono-font">
-            {{ (rapport?.totalBenefice || 0) | number:'1.0-0' }} <span class="text-xs sm:text-sm font-normal text-slate-500">FCFA</span>
+          <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider">Benefice Brut Ventes</span>
+          <div class="text-lg sm:text-xl font-bold text-emerald-600 mt-1 mono-font">
+            + {{ (rapport?.totalBenefice || 0) | number:'1.0-0' }} <span class="text-xs font-normal text-slate-500">FCFA</span>
           </div>
-          <span class="text-xs text-emerald-600 mt-1 block font-semibold">Gain net sur la periode</span>
+          <span class="text-xs text-emerald-600 mt-1 block font-semibold">Gain brut total</span>
         </div>
-        <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-circle bg-emerald-50 flex align-items-center justify-content-center text-emerald-600 flex-shrink-0">
-          <i class="pi pi-money-bill text-lg sm:text-xl"></i>
+        <div class="w-2.5rem h-2.5rem border-round-circle bg-emerald-50 flex align-items-center justify-content-center text-emerald-600 flex-shrink-0">
+          <i class="pi pi-money-bill text-base sm:text-lg"></i>
         </div>
       </div>
     </div>
 
-    <!-- Total Transactions de la PÃ©riode -->
-    <div class="col-12 sm:col-4">
-      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-indigo-500">
+    <!-- Total Depenses -->
+    <div class="col-12 sm:col-6 lg:col-3">
+      <div class="stat-card-light flex align-items-center justify-content-between border-left-3 border-rose-500 h-full">
         <div>
-          <span class="text-xs text-indigo-700 font-bold uppercase tracking-wider">Ventes de la Periode</span>
-          <div class="text-xl sm:text-2xl font-bold text-indigo-600 mt-1 mono-font">
-            {{ totalItems }} <span class="text-xs sm:text-sm font-normal text-slate-500">vente(s)</span>
+          <span class="text-xs text-rose-700 font-bold uppercase tracking-wider">Depenses Periode</span>
+          <div class="text-lg sm:text-xl font-bold text-rose-600 mt-1 mono-font">
+            - {{ (rapport?.totalDepenses || 0) | number:'1.0-0' }} <span class="text-xs font-normal text-slate-500">FCFA</span>
           </div>
-          <span class="text-xs text-indigo-600 mt-1 block font-medium">{{ rapport?.nombreArticlesTotal || 0 }} article(s) au total</span>
+          <span class="text-xs text-rose-500 mt-1 block font-medium">{{ rapport?.depenses?.length || 0 }} depense(s)</span>
         </div>
-        <div class="w-2.5rem h-2.5rem sm:w-3rem sm:h-3rem border-round-circle bg-indigo-50 flex align-items-center justify-content-center text-indigo-600 flex-shrink-0">
-          <i class="pi pi-receipt text-lg sm:text-xl"></i>
+        <div class="w-2.5rem h-2.5rem border-round-circle bg-rose-50 flex align-items-center justify-content-center text-rose-600 flex-shrink-0">
+          <i class="pi pi-arrow-down-right text-base sm:text-lg"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Benefice Reel Restant -->
+    <div class="col-12 sm:col-6 lg:col-3">
+      <div class="stat-card-light flex flex-column justify-content-center align-items-center bg-slate-50 text-center border-dashed border-2 border-emerald-500 h-full">
+        <span class="text-xs text-emerald-800 font-bold uppercase tracking-wider mb-1">Benefice Reel Net</span>
+        <div class="notebook-badge text-sm sm:text-base py-1 px-3">
+          <i class="pi pi-wallet"></i> = {{ (rapport?.beneficeNetApresDepenses || 0) | number:'1.0-0' }} FCFA
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Graphique d'evolution des ventes (masquÃ© si vide) -->
+  <!-- Graphique d'evolution -->
   <div class="store-card p-3 md:p-4 mb-3 sm:mb-4 no-print" *ngIf="chartData">
-    <div class="flex align-items-center justify-content-between mb-3">
-      <div class="flex align-items-center gap-2">
-        <i class="pi pi-chart-bar text-emerald-600 font-bold text-lg"></i>
-        <h3 class="text-sm sm:text-base font-bold text-slate-800 m-0">Graphique d'Evolution (Ventes & Benefices)</h3>
-      </div>
+    <div class="flex align-items-center gap-2 mb-3">
+      <i class="pi pi-chart-bar text-emerald-600 font-bold text-lg"></i>
+      <h3 class="text-sm sm:text-base font-bold text-slate-800 m-0">Evolution des Ventes, Benefices & Depenses</h3>
     </div>
     <div style="height: 280px;">
       <p-chart type="bar" [data]="chartData" [options]="chartOptions" height="260px"></p-chart>
     </div>
   </div>
 
-  <!-- Tableau Recapitulatif & Facture Imprimable -->
-  <div class="store-card overflow-hidden">
-    <!-- En-tete officiel visible uniquement a l'impression -->
+  <!-- Table Ventes -->
+  <div class="store-card overflow-hidden mb-3 sm:mb-4">
+    <!-- Printable Invoice Header -->
     <div class="print-only p-4 mb-3 border-bottom-2 border-slate-900">
       <div class="flex justify-content-between align-items-start">
         <div>
-          <h1 class="text-2xl font-bold m-0 text-slate-900">FACTURE / RAPPORT COMMERCIAL DE VENTES</h1>
+          <h1 class="text-2xl font-bold m-0 text-slate-900">FACTURE / RAPPORT COMMERCIAL COMPLET</h1>
           <h3 class="text-base text-slate-700 m-0 mt-1">MAGASIN COMMERCIAL</h3>
-          <p class="text-sm text-slate-600 m-0 mt-1"><strong>Periode :</strong> {{ rapport?.titrePeriode }} (Du {{ rapport?.dateDebut }} au {{ rapport?.dateFin }})</p>
+          <p class="text-sm text-slate-600 m-0 mt-1"><strong>Periode :</strong> {{ rapport?.titrePeriode }}</p>
         </div>
         <div class="text-right">
-          <p class="text-xs m-0 text-slate-500">Date d'edition : {{ dateRef }}</p>
-          <div class="text-xl font-bold mt-2 text-slate-900">Total Ventes : {{ (rapport?.totalVentes || 0) | number:'1.0-0' }} FCFA</div>
-          <div class="text-base font-bold text-emerald-700">Benefice Net : + {{ (rapport?.totalBenefice || 0) | number:'1.0-0' }} FCFA</div>
+          <p class="text-xs m-0 text-slate-500">Date : {{ dateRef }}</p>
+          <div class="text-lg font-bold text-slate-900">Total Ventes : {{ (rapport?.totalVentes || 0) | number:'1.0-0' }} FCFA</div>
+          <div class="text-sm font-bold text-rose-700">Total Depenses : - {{ (rapport?.totalDepenses || 0) | number:'1.0-0' }} FCFA</div>
+          <div class="text-base font-bold text-emerald-700">Benefice Reel Net : = {{ (rapport?.beneficeNetApresDepenses || 0) | number:'1.0-0' }} FCFA</div>
         </div>
       </div>
     </div>
 
-    <!-- Header du tableau a l'ecran -->
     <div class="flex flex-column sm:flex-row align-items-start sm:align-items-center justify-content-between p-3 bg-slate-50 border-bottom-1 border-slate-200 gap-2 no-print">
       <div class="flex align-items-center gap-2">
         <i class="pi pi-file text-blue-600 font-bold"></i>
@@ -133,7 +137,6 @@
         </span>
       </div>
 
-      <!-- Page Size Selector -->
       <div class="flex align-items-center gap-2 no-print text-xs text-slate-600 font-medium">
         <span>Par page :</span>
         <select [(ngModel)]="pageSize" (change)="onPageSizeChange(pageSize)"
@@ -143,7 +146,6 @@
       </div>
     </div>
 
-    <!-- Table Responsive Scroll -->
     <div class="table-responsive-wrapper">
       <table class="custom-sales-table">
         <thead>
@@ -153,12 +155,11 @@
             <th style="width: 70px;" class="text-center">Qte</th>
             <th>Designation / Produit</th>
             <th class="text-right">Montant Vendu</th>
-            <th class="text-right">Benefice</th>
+            <th class="text-right">Benefice Brut</th>
             <th style="width: 90px;" class="text-center">Cloture</th>
           </tr>
         </thead>
         <tbody>
-          <!-- Screen display: Paginated rows -->
           <tr *ngFor="let ligne of paginatedLignes; let i = index">
             <td class="text-center text-slate-400 font-mono font-bold">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
             <td class="font-mono text-xs sm:text-sm text-slate-600 font-semibold">{{ ligne.dateVente }}</td>
@@ -184,24 +185,21 @@
           </tr>
 
           <tr *ngIf="!rapport?.lignes || rapport?.lignes?.length === 0">
-            <td colspan="7" class="text-center p-4 sm:p-5 text-slate-400 text-sm">
-              <i class="pi pi-inbox text-3xl sm:text-4xl mb-2 block text-slate-300"></i>
+            <td colspan="7" class="text-center p-4 text-slate-400 text-sm">
+              <i class="pi pi-inbox text-3xl mb-2 block text-slate-300"></i>
               Aucune vente enregistree pour cette periode.
             </td>
           </tr>
         </tbody>
 
-        <!-- Pied de tableau avec Totaux -->
         <tfoot *ngIf="rapport?.lignes && rapport?.lignes?.length">
           <tr class="table-total-row">
-            <td colspan="4" class="text-right uppercase text-xs sm:text-sm font-bold text-slate-700">TOTAL PERIODE :</td>
-            <td class="text-right mono-font text-blue-700 text-base sm:text-lg font-bold">
+            <td colspan="4" class="text-right uppercase text-xs font-bold text-slate-700">TOTAL VENTES :</td>
+            <td class="text-right mono-font text-blue-700 text-sm sm:text-base font-bold">
               {{ (rapport?.totalVentes || 0) | number:'1.0-0' }} FCFA
             </td>
-            <td class="text-right mono-font text-emerald-600 text-base sm:text-lg font-bold">
-              <span class="notebook-badge text-xs sm:text-base py-1 px-2 sm:px-3">
-                = {{ (rapport?.totalBenefice || 0) | number:'1.0-0' }} FCFA
-              </span>
+            <td class="text-right mono-font text-emerald-600 text-sm sm:text-base font-bold">
+              + {{ (rapport?.totalBenefice || 0) | number:'1.0-0' }} FCFA
             </td>
             <td></td>
           </tr>
@@ -209,29 +207,75 @@
       </table>
     </div>
 
-    <!-- Pagination Navigation Controls for Report -->
     <div *ngIf="totalItems > pageSize" class="flex flex-column sm:flex-row align-items-center justify-content-between p-2 sm:p-3 bg-slate-50 border-top-1 border-slate-200 gap-2 no-print">
       <div class="text-xs text-slate-600 font-medium">
         <strong>{{ startRecordIndex }}</strong>-<strong>{{ endRecordIndex }}</strong> sur <strong>{{ totalItems }}</strong> ventes
       </div>
-
       <div class="flex align-items-center gap-1">
         <p-button icon="pi pi-angle-double-left" [rounded]="true" [text]="true" size="small"
-                  [disabled]="currentPage === 1" (onClick)="goToPage(1)" pTooltip="Premiere page"></p-button>
-        
+                  [disabled]="currentPage === 1" (onClick)="goToPage(1)"></p-button>
         <p-button icon="pi pi-angle-left" [rounded]="true" [text]="true" size="small"
-                  [disabled]="currentPage === 1" (onClick)="prevPage()" pTooltip="Page precedente"></p-button>
-
+                  [disabled]="currentPage === 1" (onClick)="prevPage()"></p-button>
         <span class="px-2 sm:px-3 py-1 bg-white border-1 border-slate-300 border-round-md font-mono font-bold text-xs text-slate-800">
           {{ currentPage }} / {{ totalPages }}
         </span>
-
         <p-button icon="pi pi-angle-right" [rounded]="true" [text]="true" size="small"
-                  [disabled]="currentPage === totalPages" (onClick)="nextPage()" pTooltip="Page suivante"></p-button>
-
+                  [disabled]="currentPage === totalPages" (onClick)="nextPage()"></p-button>
         <p-button icon="pi pi-angle-double-right" [rounded]="true" [text]="true" size="small"
-                  [disabled]="currentPage === totalPages" (onClick)="goToPage(totalPages)" pTooltip="Derniere page"></p-button>
+                  [disabled]="currentPage === totalPages" (onClick)="goToPage(totalPages)"></p-button>
       </div>
+    </div>
+  </div>
+
+  <!-- Table DÃ©penses de la pÃ©riode -->
+  <div class="store-card overflow-hidden" *ngIf="rapport?.depenses && rapport?.depenses?.length">
+    <div class="flex align-items-center justify-content-between p-3 bg-rose-50 border-bottom-1 border-rose-200">
+      <div class="flex align-items-center gap-2">
+        <i class="pi pi-wallet text-rose-600 font-bold"></i>
+        <h3 class="text-sm sm:text-base font-bold text-rose-900 m-0">Detail des Depenses de la Periode</h3>
+        <span class="text-xs px-2 py-0.5 bg-rose-200 text-rose-800 border-round-lg font-bold font-mono">
+          {{ rapport?.depenses?.length }}
+        </span>
+      </div>
+    </div>
+
+    <div class="table-responsive-wrapper">
+      <table class="custom-sales-table">
+        <thead>
+          <tr>
+            <th style="width: 50px;" class="text-center">#</th>
+            <th style="width: 100px;">Date</th>
+            <th>Motif</th>
+            <th style="width: 140px;" class="text-center">Categorie</th>
+            <th class="text-right">Montant Retire</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let d of rapport?.depenses; let i = index">
+            <td class="text-center text-slate-400 font-mono font-bold">{{ i + 1 }}</td>
+            <td class="font-mono text-xs sm:text-sm text-slate-600 font-semibold">{{ d.dateDepense }}</td>
+            <td>
+              <span class="font-bold text-slate-900 text-sm sm:text-base">{{ d.motif }}</span>
+            </td>
+            <td class="text-center">
+              <span class="px-2 py-1 bg-slate-100 text-slate-700 border-round-md text-xs font-bold font-mono">
+                {{ d.categorie || 'AUTRE' }}
+              </span>
+            </td>
+            <td class="text-right font-mono font-bold text-rose-600 text-sm sm:text-base">
+              - {{ d.montant | number:'1.0-0' }} FCFA
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="table-total-row bg-rose-50">
+            <td colspan="4" class="text-right uppercase text-xs font-bold text-rose-900">TOTAL DEPENSES DE LA PERIODE :</td>
+            <td class="text-right mono-font text-rose-700 text-sm sm:text-base font-bold">
+              - {{ (rapport?.totalDepenses || 0) | number:'1.0-0' }} FCFA
+            </td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
   </div>
 </div>

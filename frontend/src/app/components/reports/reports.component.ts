@@ -2,7 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VenteService } from '../../services/vente.service';
-import { RapportResponse, LigneVente } from '../../models/vente.model';
+import { RapportResponse, LigneVente, Depense } from '../../models/vente.model';
 
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -50,7 +50,7 @@ export class ReportsComponent implements OnInit {
     { label: 'Personnalise', value: 'PERSONNALISE', icon: 'pi pi-sliders-h' }
   ];
 
-  // Pagination for Report Table
+  // Pagination for Sales in Report Table
   currentPage: number = 1;
   pageSize: number = 10;
   pageSizeOptions: number[] = [5, 10, 20, 50, 100];
@@ -174,7 +174,9 @@ export class ReportsComponent implements OnInit {
     }
     const labels = this.rapport.breakdown.map(b => b.label);
     const ventes = this.rapport.breakdown.map(b => b.totalVentes);
-    const benefices = this.rapport.breakdown.map(b => b.totalBenefice);
+    const beneficesBruts = this.rapport.breakdown.map(b => b.totalBenefice);
+    const depenses = this.rapport.breakdown.map(b => b.totalDepenses || 0);
+    const beneficesReels = this.rapport.breakdown.map(b => b.beneficeNetApresDepenses || b.totalBenefice);
 
     this.chartData = {
       labels: labels,
@@ -186,9 +188,21 @@ export class ReportsComponent implements OnInit {
           borderRadius: 6
         },
         {
-          label: 'Benefice Realise (FCFA)',
-          data: benefices,
+          label: 'Benefice Brut (FCFA)',
+          data: beneficesBruts,
           backgroundColor: '#10b981',
+          borderRadius: 6
+        },
+        {
+          label: 'Depenses (FCFA)',
+          data: depenses,
+          backgroundColor: '#f43f5e',
+          borderRadius: 6
+        },
+        {
+          label: 'Benefice Reel Net (FCFA)',
+          data: beneficesReels,
+          backgroundColor: '#059669',
           borderRadius: 6
         }
       ]

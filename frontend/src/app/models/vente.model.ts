@@ -1,7 +1,7 @@
 export interface LigneVente {
   id?: number;
-  dateVente: string;
-  quantite: number;
+  dateVente?: string;
+  quantite?: number;
   nomProduit: string;
   montantVendu: number;
   benefice: number;
@@ -9,6 +9,7 @@ export interface LigneVente {
   dateCloture?: string;
   note?: string;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface LigneVenteRequest {
@@ -20,14 +21,38 @@ export interface LigneVenteRequest {
   note?: string;
 }
 
+export interface Depense {
+  id?: number;
+  dateDepense?: string;
+  motif: string;
+  montant: number;
+  categorie?: string;
+  note?: string;
+  cloturee?: boolean;
+  dateCloture?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface DepenseRequest {
+  dateDepense?: string;
+  motif: string;
+  montant: number;
+  categorie?: string;
+  note?: string;
+}
+
 export interface JourneeSummary {
   date: string;
   cloturee: boolean;
   nombreArticles: number;
   totalVentes: number;
   totalBenefice: number;
+  totalDepenses: number;
+  beneficeNetApresDepenses: number;
   tauxMarge: number;
   lignes: LigneVente[];
+  depenses: Depense[];
 }
 
 export interface PeriodeStat {
@@ -36,6 +61,8 @@ export interface PeriodeStat {
   nombreVentes: number;
   totalVentes: number;
   totalBenefice: number;
+  totalDepenses: number;
+  beneficeNetApresDepenses: number;
 }
 
 export interface RapportResponse {
@@ -46,7 +73,10 @@ export interface RapportResponse {
   nombreArticlesTotal: number;
   totalVentes: number;
   totalBenefice: number;
+  totalDepenses: number;
+  beneficeNetApresDepenses: number;
   margeMoyennePourcentage: number;
   breakdown: PeriodeStat[];
   lignes: LigneVente[];
+  depenses: Depense[];
 }
