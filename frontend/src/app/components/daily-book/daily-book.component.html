@@ -113,7 +113,7 @@
       </button>
 
       <button (click)="activeTab = 'depenses'"
-              [class]="activeTab === 'depenses' ? 'bg-rose-600 text-white shadow-1' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+              [class]="activeTab === 'depenses' ? 'bg-blue-600 text-white shadow-1' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
               class="flex align-items-center gap-2 px-3 py-2 border-round-lg font-bold text-xs sm:text-sm border-none cursor-pointer transition-all">
         <i class="pi pi-minus-circle"></i>
         <span>Sortie d'argent / Depense</span>
@@ -190,7 +190,7 @@
         </div>
 
         <div class="col-12 md:col-2 flex align-items-end mt-2 md:mt-0">
-          <p-button label="Enregistrer Depense" icon="pi pi-minus" severity="danger" styleClass="w-full font-bold h-3rem shadow-1"
+          <p-button label="Enregistrer Depense" icon="pi pi-minus" severity="primary" styleClass="w-full font-bold h-3rem shadow-1"
                     (onClick)="ajouterDepense()"></p-button>
         </div>
       </div>
