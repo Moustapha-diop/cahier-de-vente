@@ -1,6 +1,7 @@
 import { Component, OnInit, ElementRef, ViewChild, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { VenteService } from '../../services/vente.service';
 import { DepenseService } from '../../services/depense.service';
 import { JourneeSummary, LigneVente, LigneVenteRequest, Depense, DepenseRequest } from '../../models/vente.model';
@@ -33,6 +34,8 @@ import { MessageService } from 'primeng/api';
   styleUrls: ['./daily-book.component.scss']
 })
 export class DailyBookComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private venteService = inject(VenteService);
   private depenseService = inject(DepenseService);
   private messageService = inject(MessageService);
@@ -42,27 +45,22 @@ export class DailyBookComponent implements OnInit {
   summary: JourneeSummary | null = null;
   loading: boolean = false;
 
-  // Active sub-tab in daily book: 'ventes' | 'depenses'
   activeTab: 'ventes' | 'depenses' = 'ventes';
 
-  // Fast Sales Entry Fields
   newQuantite: number = 1;
   newNomProduit: string = '';
   newMontantVendu: number | null = null;
   newBenefice: number | null = null;
 
-  // Fast Expense Entry Fields
   newDepenseMotif: string = '';
   newDepenseMontant: number | null = null;
   newDepenseCategorie: string = 'AUTRE';
   categoriesDepense: string[] = ['REPAS', 'TRANSPORT', 'FACTURE', 'RETRAIT_PERSO', 'FOURNITURE', 'AUTRE'];
 
-  // Pagination for Sales Table
   currentPage: number = 1;
   pageSize: number = 10;
   pageSizeOptions: number[] = [5, 10, 20, 50, 100];
 
-  // Modals for Editing & Deleting Sales
   editDialogVisible: boolean = false;
   editingLigneId: number | null = null;
   editQuantite: number = 1;
@@ -74,7 +72,6 @@ export class DailyBookComponent implements OnInit {
   deleteDialogVisible: boolean = false;
   ligneToDelete: LigneVente | null = null;
 
-  // Modals for Editing & Deleting Expenses
   editDepenseDialogVisible: boolean = false;
   editingDepenseId: number | null = null;
   editDepenseMotif: string = '';
@@ -84,7 +81,6 @@ export class DailyBookComponent implements OnInit {
   deleteDepenseDialogVisible: boolean = false;
   depenseToDelete: Depense | null = null;
 
-  // Modal Closure
   clotureDialogVisible: boolean = false;
   isForcingReouverture: boolean = false;
 
@@ -162,7 +158,15 @@ export class DailyBookComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.chargerJournee();
+    this.route.queryParams.subscribe(params => {
+      if (params['date']) {
+        this.currentDate = params['date'];
+      } else {
+        this.currentDate = this.formatDate(new Date());
+      }
+      this.currentPage = 1;
+      this.chargerJournee();
+    });
   }
 
   formatDate(d: Date): string {
@@ -177,18 +181,18 @@ export class DailyBookComponent implements OnInit {
     d.setDate(d.getDate() + delta);
     this.currentDate = this.formatDate(d);
     this.currentPage = 1;
-    this.chargerJournee();
+    this.router.navigate([], { relativeTo: this.route, queryParams: { date: this.currentDate }, queryParamsHandling: 'merge' });
   }
 
   setToday() {
     this.currentDate = this.formatDate(new Date());
     this.currentPage = 1;
-    this.chargerJournee();
+    this.router.navigate([], { relativeTo: this.route, queryParams: { date: this.currentDate }, queryParamsHandling: 'merge' });
   }
 
   onDateChange() {
     this.currentPage = 1;
-    this.chargerJournee();
+    this.router.navigate([], { relativeTo: this.route, queryParams: { date: this.currentDate }, queryParamsHandling: 'merge' });
   }
 
   chargerJournee() {

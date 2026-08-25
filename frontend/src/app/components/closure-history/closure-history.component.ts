@@ -8,7 +8,9 @@ import { JourneeSummary } from '../../models/vente.model';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
+import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-closure-history',
@@ -19,34 +21,38 @@ import { TooltipModule } from 'primeng/tooltip';
     TableModule,
     ButtonModule,
     TagModule,
+    ToastModule,
     TooltipModule
   ],
-  templateUrl: './closure-history.component.html'
+  providers: [MessageService],
+  templateUrl: './closure-history.component.html',
+  styles: []
 })
 export class ClosureHistoryComponent implements OnInit {
   private venteService = inject(VenteService);
   private router = inject(Router);
+  private messageService = inject(MessageService);
   private cdr = inject(ChangeDetectorRef);
 
-  historique: JourneeSummary[] = [];
+  dates: string[] = [];
+  historiqueList: JourneeSummary[] = [];
   loading: boolean = false;
 
-  // Pagination for History
   currentPage: number = 1;
   pageSize: number = 10;
-  pageSizeOptions: number[] = [5, 10, 20, 50];
+  pageSizeOptions: number[] = [5, 10, 20, 50, 100];
 
   get totalItems(): number {
-    return this.historique.length;
+    return this.historiqueList.length;
   }
 
   get totalPages(): number {
     return Math.ceil(this.totalItems / this.pageSize) || 1;
   }
 
-  get paginatedHistorique(): JourneeSummary[] {
+  get paginatedList(): JourneeSummary[] {
     const start = (this.currentPage - 1) * this.pageSize;
-    return this.historique.slice(start, start + this.pageSize);
+    return this.historiqueList.slice(start, start + this.pageSize);
   }
 
   get startRecordIndex(): number {
@@ -93,48 +99,35 @@ export class ClosureHistoryComponent implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
     this.venteService.getHistoriqueDates().subscribe({
-      next: (dates: string[]) => {
+      next: (dates) => {
+        this.dates = dates;
         if (!dates || dates.length === 0) {
-          this.historique = [];
+          this.historiqueList = [];
           this.loading = false;
           this.cdr.detectChanges();
           return;
         }
 
-        const summaries: JourneeSummary[] = [];
-        let count = 0;
-
-        dates.forEach((d: string) => {
-          this.venteService.getJournee(d).subscribe({
-            next: (s: JourneeSummary) => {
-              summaries.push(s);
-              count++;
-              if (count === dates.length) {
-                summaries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                this.historique = summaries;
-                this.loading = false;
-                this.cdr.detectChanges();
-              }
-            },
-            error: () => {
-              count++;
-              if (count === dates.length) {
-                this.historique = summaries;
-                this.loading = false;
-                this.cdr.detectChanges();
-              }
-            }
-          });
+        const promises = dates.map(d => this.venteService.getJournee(d).toPromise());
+        Promise.all(promises).then((summaries) => {
+          this.historiqueList = (summaries.filter(s => !!s) as JourneeSummary[])
+            .sort((a, b) => b.date.localeCompare(a.date));
+          this.loading = false;
+          this.cdr.detectChanges();
+        }).catch(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
         });
       },
       error: () => {
         this.loading = false;
         this.cdr.detectChanges();
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de charger l\'historique.' });
       }
     });
   }
 
-  ouvrirJournee(date: string) {
-    this.router.navigate(['/cahier'], { queryParams: { date } });
+  consulterJournee(date: string) {
+    this.router.navigate(['/cahier'], { queryParams: { date: date } });
   }
 }
