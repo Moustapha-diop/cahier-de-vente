@@ -457,88 +457,87 @@
 
   <!-- ==================== MODAL FACTURE CLIENT (TICKET OFFICIEL) ==================== -->
   <p-dialog [(visible)]="invoiceModalVisible" header="AperÃ§u Facture Client" [modal]="true" [draggable]="false" [resizable]="false" [dismissableMask]="true" [style]="{width: '95vw', maxWidth: '550px'}" styleClass="p-fluid invoice-dialog">
-    <div id="printable-invoice" class="bg-white p-3 sm:p-4 border-round-xl border-1 border-slate-300 text-slate-900">
+    <div id="printable-invoice" class="invoice-container">
       
-      <!-- En-tÃªte de la facture -->
-      <div class="text-center border-bottom-2 border-slate-900 pb-3 mb-3">
-        <h1 class="text-xl sm:text-2xl font-bold m-0 text-slate-900 tracking-tight">BOUTIQUE YA FALY KA</h1>
-        <p class="text-xs text-slate-600 m-0 mt-1 font-medium">Vente en Gros, Demi-Gros & DÃ©tail</p>
-        <div class="text-xs font-bold text-slate-700 mt-1">
-          ðŸ“ž 77 651 75 58 | 77 647 12 90 | 78 564 57 67 | 77 107 49 67
+      <!-- En-tete de la facture -->
+      <div class="invoice-header">
+        <h1 class="invoice-title">BOUTIQUE YA FALY KA</h1>
+        <p class="invoice-subtitle">Vente en Gros, Demi-Gros &amp; Detail</p>
+        <div class="invoice-phones">
+          Tel : 77 651 75 58 &bull; 77 647 12 90 &bull; 78 564 57 67 &bull; 77 107 49 67
         </div>
       </div>
 
-      <!-- Informations Facture & Client -->
-      <div class="flex justify-content-between align-items-center text-xs mb-3 font-medium bg-slate-50 p-2 border-round-lg">
-        <div>
-          <div><strong>NÂ° Facture :</strong> <span class="font-mono">{{ currentFacture?.numeroFacture }}</span></div>
-          <div><strong>Client :</strong> {{ currentFacture?.clientNom }}</div>
-        </div>
-        <div class="text-right">
-          <div><strong>Date :</strong> {{ currentFacture?.date }} Ã  {{ currentFacture?.heure }}</div>
-          <div><strong>RÃ¨glement :</strong> {{ currentFacture?.modePaiement }}</div>
-        </div>
-      </div>
+      <!-- Informations Facture & Client (Encadre) -->
+      <table class="invoice-info-table">
+        <tr>
+          <td style="width: 50%;">
+            <strong>N&deg; Facture :</strong> <span class="mono-text">{{ currentFacture?.numeroFacture }}</span><br>
+            <strong>Client :</strong> {{ currentFacture?.clientNom }}
+          </td>
+          <td style="width: 50%; text-align: right;">
+            <strong>Date :</strong> {{ currentFacture?.date }} a {{ currentFacture?.heure }}<br>
+            <strong>Reglement :</strong> {{ currentFacture?.modePaiement }}
+          </td>
+        </tr>
+      </table>
 
-      <!-- Tableau des articles -->
-      <table class="w-full text-xs mb-3 border-collapse">
+      <!-- Tableau des articles structure avec bordures nettes -->
+      <table class="invoice-table">
         <thead>
-          <tr class="bg-slate-900 text-white font-bold">
-            <th class="p-2 text-center" style="width: 45px;">QtÃ©</th>
-            <th class="p-2 text-left">DÃ©signation</th>
-            <th class="p-2 text-right" style="width: 90px;">P.U (FCFA)</th>
-            <th class="p-2 text-right" style="width: 95px;">Total (FCFA)</th>
+          <tr>
+            <th style="width: 15%; text-align: center;">QTE</th>
+            <th style="width: 45%; text-align: left;">DESIGNATION</th>
+            <th style="width: 20%; text-align: right;">P.U (FCFA)</th>
+            <th style="width: 20%; text-align: right;">TOTAL (FCFA)</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let it of currentFacture?.items; let idx = index" class="border-bottom-1 border-slate-200">
-            <td class="p-2 text-center font-bold font-mono">{{ it.quantite }}x</td>
-            <td class="p-2 font-bold">{{ it.nomProduit }}</td>
-            <td class="p-2 text-right font-mono">{{ it.prixUnitaire | number:'1.0-0' }}</td>
-            <td class="p-2 text-right font-mono font-bold">{{ it.total | number:'1.0-0' }}</td>
+          <tr *ngFor="let it of currentFacture?.items">
+            <td style="text-align: center; font-weight: bold;">{{ it.quantite }}x</td>
+            <td style="font-weight: 600;">{{ it.nomProduit }}</td>
+            <td style="text-align: right; font-family: monospace;">{{ it.prixUnitaire | number:'1.0-0' }}</td>
+            <td style="text-align: right; font-weight: bold; font-family: monospace;">{{ it.total | number:'1.0-0' }}</td>
           </tr>
         </tbody>
         <tfoot>
-          <tr class="bg-slate-100 font-bold border-top-2 border-slate-900">
-            <td colspan="3" class="p-2 text-right uppercase">NET Ã€ PAYER :</td>
-            <td class="p-2 text-right font-mono text-base text-blue-700">
+          <tr class="invoice-total-row">
+            <td colspan="3" style="text-align: right; font-weight: bold; font-size: 14px;">NET A PAYER :</td>
+            <td style="text-align: right; font-weight: bold; font-size: 16px; font-family: monospace; color: #1d4ed8;">
               {{ currentFacture?.totalMontant | number:'1.0-0' }} FCFA
             </td>
           </tr>
         </tfoot>
       </table>
 
-      <!-- Pied de page officiel avec QR Code, TÃ©lÃ©phones et Lien Web -->
-      <div class="border-top-2 border-dashed border-slate-300 pt-3 text-center">
-        <div class="flex flex-column sm:flex-row align-items-center justify-content-center gap-3 mb-2">
-          <!-- QR Code Image -->
-          <div class="flex flex-column align-items-center">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=https://ya-faly-ka.vercel.app/"
-                 alt="QR Code Boutique YA FALY KA" class="w-5rem h-5rem border-1 border-slate-300 border-round p-1 bg-white" />
-            <span class="text-xs text-slate-500 mt-1 font-mono">Scannez pour visiter</span>
+      <!-- Pied de page officiel avec QR Code, Telephones et Lien Web -->
+      <div class="invoice-footer">
+        <div class="footer-grid">
+          <div class="qr-block">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://ya-faly-ka.vercel.app/"
+                 alt="QR Code Boutique YA FALY KA" class="qr-img" />
+            <span class="qr-sub">Scannez pour visiter</span>
           </div>
 
-          <!-- Web link & Message -->
-          <div class="text-center sm:text-left">
-            <div class="text-xs font-bold text-blue-700">
-              ðŸŒ <a href="https://ya-faly-ka.vercel.app/" target="_blank" class="text-blue-700 no-underline">https://ya-faly-ka.vercel.app/</a>
+          <div class="footer-details">
+            <div class="footer-url">
+              Site Web : <strong>https://ya-faly-ka.vercel.app/</strong>
             </div>
-            <div class="text-xs text-slate-600 mt-1">
-              ðŸ“± <strong>77 651 75 58 &bull; 77 647 12 90</strong>
+            <div class="footer-tel">
+              Service Client : <strong>77 651 75 58 &bull; 77 647 12 90</strong>
             </div>
-            <div class="text-xs text-slate-600">
-              ðŸ“± <strong>78 564 57 67 &bull; 77 107 49 67</strong>
+            <div class="footer-tel">
+              Commandes : <strong>78 564 57 67 &bull; 77 107 49 67</strong>
             </div>
           </div>
         </div>
 
-        <p class="text-xs text-slate-600 font-semibold m-0 mt-2 italic">
-          Merci pour votre fidÃ©litÃ© et votre confiance ! Ã€ trÃ¨s bientÃ´t.
+        <p class="footer-thanks">
+          Merci pour votre confiance ! A tres bientot chez Boutique YA FALY KA.
         </p>
       </div>
 
     </div>
-
     <!-- Modal Action Buttons -->
     <div class="flex align-items-center justify-content-end gap-2 pt-3 mt-2 border-top-1 border-slate-200 no-print">
       <p-button label="Fermer" icon="pi pi-times" [outlined]="true" severity="secondary" (onClick)="invoiceModalVisible = false"></p-button>

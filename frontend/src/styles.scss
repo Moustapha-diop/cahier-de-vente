@@ -182,3 +182,196 @@ div[style*="Invalid PrimeUI License"] {
     box-shadow: none !important;
   }
 }
+
+/* ==================== STYLES FACTURE OFFICIELLE YA FALY KA ==================== */
+.invoice-container {
+  background: #ffffff;
+  padding: 20px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  color: #0f172a;
+  font-family: 'Inter', -apple-system, sans-serif;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.invoice-header {
+  text-align: center;
+  border-bottom: 2px solid #0f172a;
+  padding-bottom: 12px;
+  margin-bottom: 15px;
+}
+
+.invoice-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+}
+
+.invoice-subtitle {
+  font-size: 11px;
+  color: #64748b;
+  margin: 4px 0 0 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.invoice-phones {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 6px;
+}
+
+.invoice-info-table {
+  width: 100%;
+  border: 1px solid #94a3b8;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  background-color: #f8fafc;
+  font-size: 12px;
+}
+
+.invoice-info-table td {
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  line-height: 1.5;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  font-size: 12px;
+  border: 1.5px solid #0f172a;
+}
+
+.invoice-table th {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  padding: 8px 10px;
+  border: 1px solid #0f172a;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.invoice-table td {
+  padding: 8px 10px;
+  border: 1px solid #94a3b8;
+  color: #0f172a;
+}
+
+.invoice-table tbody tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.invoice-total-row td {
+  border-top: 2px solid #0f172a;
+  border-bottom: 2px solid #0f172a;
+  background-color: #f1f5f9 !important;
+  padding: 10px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.invoice-footer {
+  border-top: 1.5px dashed #94a3b8;
+  padding-top: 15px;
+  text-align: center;
+}
+
+.footer-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.qr-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qr-img {
+  width: 70px;
+  height: 70px;
+  border: 1px solid #cbd5e1;
+  padding: 3px;
+  background: white;
+  border-radius: 6px;
+}
+
+.qr-sub {
+  font-size: 9px;
+  color: #64748b;
+  margin-top: 3px;
+  font-family: monospace;
+}
+
+.footer-details {
+  text-align: left;
+  font-size: 11px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.footer-url {
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.footer-thanks {
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 600;
+  color: #475569;
+  margin: 10px 0 0 0;
+}
+
+/* ==================== MEDIA PRINT OPTIMISATIONS ==================== */
+@media print {
+  body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  body * {
+    visibility: hidden;
+  }
+
+  #printable-invoice, #printable-invoice * {
+    visibility: visible !important;
+  }
+
+  #printable-invoice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 480px !important;
+    margin: 0 auto !important;
+    border: none !important;
+    padding: 10px !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .invoice-table th {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+  }
+
+  .invoice-total-row td {
+    background-color: #f1f5f9 !important;
+  }
+}
