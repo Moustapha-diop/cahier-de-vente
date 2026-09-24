@@ -76,7 +76,7 @@ export class DailyBookComponent implements OnInit {
   newBenefice: number | null = null;
 
   factureClientNom: string = 'Client Comptoir';
-  factureModePaiement: string = 'EspÃ¨ces';
+  factureModePaiement: string = 'EspAces';
   factureItems: FactureItem[] = [
     { quantite: 1, nomProduit: '', prixUnitaire: 0, beneficeUnitaire: 0 }
   ];
@@ -282,7 +282,7 @@ export class DailyBookComponent implements OnInit {
 
     this.venteService.ajouterLigne(request).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Vente ajoutÃ©e', detail: `${qte}x ${request.nomProduit} enregistrÃ© avec succÃ¨s.` });
+        this.messageService.add({ severity: 'success', summary: 'Vente ajoutAe', detail: `${qte}x ${request.nomProduit} enregistrA avec succAs.` });
         this.newNomProduit = '';
         this.newMontantVendu = null;
         this.newBenefice = null;
@@ -334,7 +334,7 @@ export class DailyBookComponent implements OnInit {
     });
 
     Promise.all(savePromises).then(() => {
-      this.messageService.add({ severity: 'success', summary: 'Facture EnregistrÃ©e', detail: `${validItems.length} article(s) enregistrÃ©s et facture gÃ©nÃ©rÃ©e.` });
+      this.messageService.add({ severity: 'success', summary: 'Facture EnregistrAe', detail: `${validItems.length} article(s) enregistrAs et facture gAnArAe.` });
 
       this.currentFacture = {
         numeroFacture: invoiceNum,
@@ -376,7 +376,7 @@ export class DailyBookComponent implements OnInit {
       date: ligne.dateVente || this.currentDate,
       heure: this.formatTime(now),
       clientNom: 'Client Comptoir',
-      modePaiement: 'EspÃ¨ces',
+      modePaiement: 'EspAces',
       items: [
         {
           quantite: qte,
@@ -418,7 +418,7 @@ export class DailyBookComponent implements OnInit {
       date: this.currentDate,
       heure: this.formatTime(now),
       clientNom: 'Client Comptoir',
-      modePaiement: 'EspÃ¨ces',
+      modePaiement: 'EspAces',
       items: items,
       totalMontant: total
     };
@@ -433,7 +433,7 @@ export class DailyBookComponent implements OnInit {
 
   ajouterDepense() {
     if (!this.newDepenseMotif.trim()) {
-      this.messageService.add({ severity: 'warn', summary: 'Attention', detail: 'Veuillez saisir le motif de la dÃ©pense/retrait.' });
+      this.messageService.add({ severity: 'warn', summary: 'Attention', detail: 'Veuillez saisir le motif de la dApense/retrait.' });
       return;
     }
     if (this.newDepenseMontant === null || this.newDepenseMontant <= 0) {
@@ -450,14 +450,14 @@ export class DailyBookComponent implements OnInit {
 
     this.depenseService.ajouterDepense(request).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'info', summary: 'DÃ©pense enregistrÃ©e', detail: `${request.motif} (${request.montant} FCFA) dÃ©duit du bÃ©nÃ©fice.` });
+        this.messageService.add({ severity: 'info', summary: 'DApense enregistrAe', detail: `${request.motif} (${request.montant} FCFA) dAduit du bAnAfice.` });
         this.newDepenseMotif = '';
         this.newDepenseMontant = null;
         this.chargerJournee();
         setTimeout(() => this.depenseInputRef?.nativeElement?.focus(), 100);
       },
       error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible d\'enregistrer la dÃ©pense.' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible d\'enregistrer la dApense.' });
       }
     });
   }
@@ -489,7 +489,7 @@ export class DailyBookComponent implements OnInit {
     this.venteService.modifierLigne(this.editingLigneId, req).subscribe({
       next: () => {
         this.editDialogVisible = false;
-        this.messageService.add({ severity: 'success', summary: 'ModifiÃ©', detail: 'Ligne mise Ã  jour.' });
+        this.messageService.add({ severity: 'success', summary: 'ModifiA', detail: 'Ligne mise A jour.' });
         this.chargerJournee();
       },
       error: () => {
@@ -509,7 +509,7 @@ export class DailyBookComponent implements OnInit {
     this.venteService.supprimerLigne(this.ligneToDelete.id).subscribe({
       next: () => {
         this.deleteDialogVisible = false;
-        this.messageService.add({ severity: 'success', summary: 'SupprimÃ©', detail: 'Ligne supprimÃ©e.' });
+        this.messageService.add({ severity: 'success', summary: 'SupprimA', detail: 'Ligne supprimAe.' });
         this.ligneToDelete = null;
         this.chargerJournee();
       },
@@ -540,7 +540,7 @@ export class DailyBookComponent implements OnInit {
     this.depenseService.modifierDepense(this.editingDepenseId, req).subscribe({
       next: () => {
         this.editDepenseDialogVisible = false;
-        this.messageService.add({ severity: 'success', summary: 'ModifiÃ©', detail: 'DÃ©pense mise Ã  jour.' });
+        this.messageService.add({ severity: 'success', summary: 'ModifiA', detail: 'DApense mise A jour.' });
         this.chargerJournee();
       },
       error: () => {
@@ -560,12 +560,12 @@ export class DailyBookComponent implements OnInit {
     this.depenseService.supprimerDepense(this.depenseToDelete.id).subscribe({
       next: () => {
         this.deleteDepenseDialogVisible = false;
-        this.messageService.add({ severity: 'success', summary: 'SupprimÃ©', detail: 'DÃ©pense supprimÃ©e.' });
+        this.messageService.add({ severity: 'success', summary: 'SupprimA', detail: 'DApense supprimAe.' });
         this.depenseToDelete = null;
         this.chargerJournee();
       },
       error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de supprimer cette dÃ©pense.' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de supprimer cette dApense.' });
       }
     });
   }
@@ -580,13 +580,13 @@ export class DailyBookComponent implements OnInit {
     this.venteService.cloturerJournee(this.currentDate, this.isForcingReouverture).subscribe({
       next: () => {
         this.clotureDialogVisible = false;
-        const msg = this.isForcingReouverture ? 'JournÃ©e rÃ©ouverte !' : 'JournÃ©e clÃ´turÃ©e avec succÃ¨s !';
-        this.messageService.add({ severity: 'success', summary: 'Statut mis Ã  jour', detail: msg });
+        const msg = this.isForcingReouverture ? 'JournAe rAouverte !' : 'JournAe clAturAe avec succAs !';
+        this.messageService.add({ severity: 'success', summary: 'Statut mis A jour', detail: msg });
         this.chargerJournee();
       },
       error: () => {
         this.clotureDialogVisible = false;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors de la clÃ´ture.' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Erreur lors de la clAture.' });
       }
     });
   }
