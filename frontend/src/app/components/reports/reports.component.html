@@ -37,7 +37,7 @@
     </div>
   </div>
 
-  <!-- 4 Key Metrics (Total Ventes, BÃ©nÃ©fice Brut, DÃ©penses PÃ©riode, BÃ©nÃ©fice RÃ©el Restant) -->
+  <!-- 4 Key Metrics (Total Ventes, Benefice Brut, Depenses Periode, Benefice Reel Restant) -->
   <div class="grid mb-3 sm:mb-4">
     <!-- Total Ventes -->
     <div class="col-12 sm:col-6 lg:col-3">
@@ -102,7 +102,7 @@
   <div class="store-card p-3 md:p-4 mb-3 sm:mb-4 no-print" *ngIf="chartData">
     <div class="flex align-items-center gap-2 mb-3">
       <i class="pi pi-chart-bar text-emerald-600 font-bold text-lg"></i>
-      <h3 class="text-sm sm:text-base font-bold text-slate-800 m-0">Evolution des Ventes, Benefices & Depenses</h3>
+      <h3 class="text-sm sm:text-base font-bold text-slate-800 m-0">Evolution des Ventes, Benefices &amp; Depenses</h3>
     </div>
     <div style="height: 280px;">
       <p-chart type="bar" [data]="chartData" [options]="chartOptions" height="260px"></p-chart>
@@ -227,7 +227,7 @@
     </div>
   </div>
 
-  <!-- Table DÃ©penses de la pÃ©riode -->
+  <!-- Table Depenses de la periode -->
   <div class="store-card overflow-hidden" *ngIf="rapport?.depenses && rapport?.depenses?.length">
     <div class="flex align-items-center justify-content-between p-3 bg-rose-50 border-bottom-1 border-rose-200">
       <div class="flex align-items-center gap-2">
