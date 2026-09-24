@@ -163,3 +163,22 @@ div[style*="Invalid PrimeUI License"] {
   opacity: 0 !important;
   pointer-events: none !important;
 }
+/* Print styles specifically for customer invoice dialog */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-invoice, #printable-invoice * {
+    visibility: visible !important;
+  }
+  #printable-invoice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+}

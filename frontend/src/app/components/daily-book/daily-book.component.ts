@@ -15,6 +15,29 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 
+export interface FactureItem {
+  quantite: number;
+  nomProduit: string;
+  prixUnitaire: number;
+  beneficeUnitaire: number;
+}
+
+export interface FactureData {
+  numeroFacture: string;
+  date: string;
+  heure: string;
+  clientNom: string;
+  clientTelephone?: string;
+  modePaiement: string;
+  items: {
+    quantite: number;
+    nomProduit: string;
+    prixUnitaire: number;
+    total: number;
+  }[];
+  totalMontant: number;
+}
+
 @Component({
   selector: 'app-daily-book',
   standalone: true,
@@ -45,17 +68,28 @@ export class DailyBookComponent implements OnInit {
   summary: JourneeSummary | null = null;
   loading: boolean = false;
 
-  activeTab: 'ventes' | 'depenses' = 'ventes';
+  activeTab: 'ventes' | 'depenses' | 'facture' = 'ventes';
 
   newQuantite: number = 1;
   newNomProduit: string = '';
   newMontantVendu: number | null = null;
   newBenefice: number | null = null;
 
+  factureClientNom: string = 'Client Comptoir';
+  factureModePaiement: string = 'EspÃ¨ces';
+  factureItems: FactureItem[] = [
+    { quantite: 1, nomProduit: '', prixUnitaire: 0, beneficeUnitaire: 0 }
+  ];
+
   newDepenseMotif: string = '';
   newDepenseMontant: number | null = null;
   newDepenseCategorie: string = 'AUTRE';
   categoriesDepense: string[] = ['REPAS', 'TRANSPORT', 'FACTURE', 'RETRAIT_PERSO', 'FOURNITURE', 'AUTRE'];
+
+  selectedLignes: { [id: number]: boolean } = {};
+
+  invoiceModalVisible: boolean = false;
+  currentFacture: FactureData | null = null;
 
   currentPage: number = 1;
   pageSize: number = 10;
@@ -110,6 +144,21 @@ export class DailyBookComponent implements OnInit {
     return Math.min(this.currentPage * this.pageSize, this.totalItems);
   }
 
+  get factureTotalMontant(): number {
+    return this.factureItems.reduce((acc, item) => {
+      const q = (item.quantite && item.quantite > 0) ? item.quantite : 1;
+      return acc + ((item.prixUnitaire || 0) * q);
+    }, 0);
+  }
+
+  get hasSelectedLignes(): boolean {
+    return Object.values(this.selectedLignes).some(val => val === true);
+  }
+
+  get selectedCount(): number {
+    return Object.values(this.selectedLignes).filter(val => val === true).length;
+  }
+
   goToPage(p: number) {
     if (p >= 1 && p <= this.totalPages) {
       this.currentPage = p;
@@ -147,16 +196,6 @@ export class DailyBookComponent implements OnInit {
     return (this.newBenefice || 0) * qte;
   }
 
-  get editPreviewTotalMontant(): number {
-    const qte = this.editQuantite > 0 ? this.editQuantite : 1;
-    return (this.editMontantUnitaire || 0) * qte;
-  }
-
-  get editPreviewTotalBenefice(): number {
-    const qte = this.editQuantite > 0 ? this.editQuantite : 1;
-    return (this.editBeneficeUnitaire || 0) * qte;
-  }
-
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       if (params['date']) {
@@ -165,6 +204,7 @@ export class DailyBookComponent implements OnInit {
         this.currentDate = this.formatDate(new Date());
       }
       this.currentPage = 1;
+      this.selectedLignes = {};
       this.chargerJournee();
     });
   }
@@ -174,6 +214,12 @@ export class DailyBookComponent implements OnInit {
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  formatTime(d: Date): string {
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
   }
 
   changerJour(delta: number) {
@@ -250,6 +296,141 @@ export class DailyBookComponent implements OnInit {
     });
   }
 
+  ajouterItemFacture() {
+    this.factureItems.push({ quantite: 1, nomProduit: '', prixUnitaire: 0, beneficeUnitaire: 0 });
+    this.cdr.detectChanges();
+  }
+
+  supprimerItemFacture(index: number) {
+    if (this.factureItems.length > 1) {
+      this.factureItems.splice(index, 1);
+      this.cdr.detectChanges();
+    }
+  }
+
+  validerEtImprimerFactureMulti() {
+    const validItems = this.factureItems.filter(item => item.nomProduit.trim().length > 0 && item.prixUnitaire > 0);
+    if (validItems.length === 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Attention', detail: 'Veuillez renseigner au moins un produit avec un prix valide.' });
+      return;
+    }
+
+    const now = new Date();
+    const invoiceNum = 'FAC-' + now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0') + '-' + String(Math.floor(100 + Math.random() * 900));
+
+    const savePromises = validItems.map(item => {
+      const q = (item.quantite && item.quantite > 0) ? item.quantite : 1;
+      const totalMontant = item.prixUnitaire * q;
+      const totalBenefice = (item.beneficeUnitaire || 0) * q;
+      const req: LigneVenteRequest = {
+        dateVente: this.currentDate,
+        quantite: q,
+        nomProduit: item.nomProduit.trim().toUpperCase(),
+        montantVendu: totalMontant,
+        benefice: totalBenefice,
+        note: `Facture ${invoiceNum}`
+      };
+      return this.venteService.ajouterLigne(req).toPromise();
+    });
+
+    Promise.all(savePromises).then(() => {
+      this.messageService.add({ severity: 'success', summary: 'Facture EnregistrÃ©e', detail: `${validItems.length} article(s) enregistrÃ©s et facture gÃ©nÃ©rÃ©e.` });
+
+      this.currentFacture = {
+        numeroFacture: invoiceNum,
+        date: this.currentDate,
+        heure: this.formatTime(now),
+        clientNom: this.factureClientNom.trim() || 'Client Comptoir',
+        modePaiement: this.factureModePaiement,
+        items: validItems.map(item => {
+          const q = (item.quantite && item.quantite > 0) ? item.quantite : 1;
+          return {
+            quantite: q,
+            nomProduit: item.nomProduit.trim().toUpperCase(),
+            prixUnitaire: item.prixUnitaire,
+            total: item.prixUnitaire * q
+          };
+        }),
+        totalMontant: this.factureTotalMontant
+      };
+
+      this.factureItems = [{ quantite: 1, nomProduit: '', prixUnitaire: 0, beneficeUnitaire: 0 }];
+      this.factureClientNom = 'Client Comptoir';
+      this.chargerJournee();
+
+      this.invoiceModalVisible = true;
+      this.cdr.detectChanges();
+    }).catch(() => {
+      this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Une erreur est survenue lors de l\'enregistrement de la facture.' });
+    });
+  }
+
+  genererFactureLigne(ligne: LigneVente) {
+    const now = new Date();
+    const qte = (ligne.quantite && ligne.quantite > 0) ? ligne.quantite : 1;
+    const pu = (ligne.montantVendu || 0) / qte;
+    const invoiceNum = 'FAC-' + (ligne.dateVente ? ligne.dateVente.replace(/-/g, '') : '2026') + '-' + String(ligne.id || 1).padStart(3, '0');
+
+    this.currentFacture = {
+      numeroFacture: invoiceNum,
+      date: ligne.dateVente || this.currentDate,
+      heure: this.formatTime(now),
+      clientNom: 'Client Comptoir',
+      modePaiement: 'EspÃ¨ces',
+      items: [
+        {
+          quantite: qte,
+          nomProduit: ligne.nomProduit,
+          prixUnitaire: pu,
+          total: ligne.montantVendu || 0
+        }
+      ],
+      totalMontant: ligne.montantVendu || 0
+    };
+
+    this.invoiceModalVisible = true;
+    this.cdr.detectChanges();
+  }
+
+  genererFactureSelection() {
+    if (!this.summary?.lignes) return;
+    const selected = this.summary.lignes.filter(l => l.id && this.selectedLignes[l.id]);
+    if (selected.length === 0) return;
+
+    const now = new Date();
+    const invoiceNum = 'FAC-' + now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0') + '-GRP' + String(Math.floor(100 + Math.random() * 900));
+
+    const items = selected.map(ligne => {
+      const q = (ligne.quantite && ligne.quantite > 0) ? ligne.quantite : 1;
+      const pu = (ligne.montantVendu || 0) / q;
+      return {
+        quantite: q,
+        nomProduit: ligne.nomProduit,
+        prixUnitaire: pu,
+        total: ligne.montantVendu || 0
+      };
+    });
+
+    const total = items.reduce((acc, it) => acc + it.total, 0);
+
+    this.currentFacture = {
+      numeroFacture: invoiceNum,
+      date: this.currentDate,
+      heure: this.formatTime(now),
+      clientNom: 'Client Comptoir',
+      modePaiement: 'EspÃ¨ces',
+      items: items,
+      totalMontant: total
+    };
+
+    this.invoiceModalVisible = true;
+    this.cdr.detectChanges();
+  }
+
+  imprimerFactureClientDirect() {
+    window.print();
+  }
+
   ajouterDepense() {
     if (!this.newDepenseMotif.trim()) {
       this.messageService.add({ severity: 'warn', summary: 'Attention', detail: 'Veuillez saisir le motif de la dÃ©pense/retrait.' });
@@ -289,6 +470,7 @@ export class DailyBookComponent implements OnInit {
     this.editBeneficeUnitaire = (ligne.benefice || 0) / this.editQuantite;
     this.editNote = ligne.note || '';
     this.editDialogVisible = true;
+    this.cdr.detectChanges();
   }
 
   enregistrerEdition() {
@@ -319,6 +501,7 @@ export class DailyBookComponent implements OnInit {
   demanderSuppression(ligne: LigneVente) {
     this.ligneToDelete = ligne;
     this.deleteDialogVisible = true;
+    this.cdr.detectChanges();
   }
 
   confirmerSuppressionDirect() {
@@ -342,6 +525,7 @@ export class DailyBookComponent implements OnInit {
     this.editDepenseMontant = depense.montant;
     this.editDepenseCategorie = depense.categorie || 'AUTRE';
     this.editDepenseDialogVisible = true;
+    this.cdr.detectChanges();
   }
 
   enregistrerEditionDepense() {
@@ -368,6 +552,7 @@ export class DailyBookComponent implements OnInit {
   demanderSuppressionDepense(depense: Depense) {
     this.depenseToDelete = depense;
     this.deleteDepenseDialogVisible = true;
+    this.cdr.detectChanges();
   }
 
   confirmerSuppressionDepenseDirect() {
@@ -388,6 +573,7 @@ export class DailyBookComponent implements OnInit {
   demanderCloture(forcerReouverture: boolean = false) {
     this.isForcingReouverture = forcerReouverture;
     this.clotureDialogVisible = true;
+    this.cdr.detectChanges();
   }
 
   confirmerClotureDirect() {
