@@ -428,7 +428,205 @@ export class DailyBookComponent implements OnInit {
   }
 
   imprimerFactureClientDirect() {
-    window.print();
+    const invoiceElem = document.getElementById('printable-invoice');
+    if (!invoiceElem) {
+      window.print();
+      return;
+    }
+
+    const invoiceContent = invoiceElem.innerHTML;
+
+    // Create a dedicated clean iframe to print ONLY the invoice without any SPA margins
+    let iframe = document.getElementById('invoice-print-frame') as HTMLIFrameElement;
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'invoice-print-frame';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (!doc) {
+      window.print();
+      return;
+    }
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Facture - Boutique YA FALY KA</title>
+          <style>
+            @page {
+              size: auto;
+              margin: 10mm 15mm;
+            }
+            * {
+              box-sizing: border-box;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              color: #0f172a;
+              background: #ffffff;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .invoice-container {
+              width: 100%;
+              max-width: 100%;
+              margin: 0;
+              padding: 0;
+            }
+            .invoice-header {
+              text-align: center;
+              border-bottom: 2.5px solid #0f172a;
+              padding-bottom: 12px;
+              margin-bottom: 15px;
+            }
+            .invoice-title {
+              font-size: 24px;
+              font-weight: 900;
+              margin: 0;
+              color: #0f172a;
+              letter-spacing: -0.5px;
+              text-transform: uppercase;
+            }
+            .invoice-subtitle {
+              font-size: 12px;
+              color: #475569;
+              margin: 4px 0 0 0;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.8px;
+            }
+            .invoice-phones {
+              font-size: 12px;
+              font-weight: 700;
+              color: #1e293b;
+              margin-top: 6px;
+            }
+            .invoice-info-table {
+              width: 100%;
+              border: 1.5px solid #94a3b8;
+              border-collapse: collapse;
+              margin-bottom: 15px;
+              background-color: #f8fafc;
+              font-size: 13px;
+            }
+            .invoice-info-table td {
+              padding: 9px 12px;
+              border: 1px solid #cbd5e1;
+              line-height: 1.5;
+            }
+            .invoice-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 15px;
+              font-size: 13px;
+              border: 2px solid #0f172a;
+            }
+            .invoice-table th {
+              background-color: #0f172a !important;
+              color: #ffffff !important;
+              font-weight: 800;
+              padding: 10px 12px;
+              border: 1px solid #0f172a;
+              font-size: 12px;
+              letter-spacing: 0.5px;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            .invoice-table td {
+              padding: 10px 12px;
+              border: 1px solid #cbd5e1;
+              color: #0f172a;
+            }
+            .invoice-table tbody tr:nth-child(even) {
+              background-color: #f8fafc;
+            }
+            .invoice-total-row td {
+              border-top: 2.5px solid #0f172a;
+              border-bottom: 2.5px solid #0f172a;
+              background-color: #f1f5f9 !important;
+              padding: 12px;
+              font-size: 15px;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            .invoice-footer {
+              border-top: 1.5px dashed #94a3b8;
+              padding-top: 15px;
+              text-align: center;
+              margin-top: 10px;
+            }
+            .footer-grid {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 20px;
+              margin-bottom: 10px;
+            }
+            .qr-block {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+            }
+            .qr-img {
+              width: 80px;
+              height: 80px;
+              border: 1px solid #cbd5e1;
+              padding: 3px;
+              background: white;
+              border-radius: 6px;
+            }
+            .qr-sub {
+              font-size: 9px;
+              color: #64748b;
+              margin-top: 3px;
+              font-family: monospace;
+            }
+            .footer-details {
+              text-align: left;
+              font-size: 12px;
+              color: #334155;
+              line-height: 1.5;
+            }
+            .footer-url {
+              font-weight: 800;
+              color: #1d4ed8;
+              font-size: 13px;
+            }
+            .footer-thanks {
+              font-size: 11px;
+              font-style: italic;
+              font-weight: 600;
+              color: #475569;
+              margin: 10px 0 0 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-container">
+            ${invoiceContent}
+          </div>
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+    }, 300);
   }
 
   ajouterDepense() {
